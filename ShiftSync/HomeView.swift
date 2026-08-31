@@ -74,6 +74,12 @@ struct HomeView: View {
 
     // MARK: - Body
 
+    private var bottomScrollPadding: CGFloat {
+        let safeBottom = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?
+            .windows.first?.safeAreaInsets.bottom ?? 0
+        return 82 + safeBottom
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -84,7 +90,7 @@ struct HomeView: View {
                 statsRow
                 Spacer().frame(height: 20)
                 recentActivitySection
-                Spacer().frame(height: 120)
+                Spacer().frame(height: bottomScrollPadding)
             }
             .padding(.horizontal, 16)
         }
@@ -177,9 +183,13 @@ struct HomeView: View {
                 Text("ShiftSync")
                     .font(.system(size: 26, weight: .black))
                     .foregroundColor(.ssTextPrimary)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
                 Text("\(greeting), \(userName)")
                     .font(.system(size: 14))
                     .foregroundColor(.ssTextSecondary)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
             }
             Spacer()
             HStack(spacing: 10) {
@@ -242,6 +252,8 @@ struct HomeView: View {
 
             Text(isClocked ? formatElapsedHMS(elapsedSeconds) : "00:00:00")
                 .font(.system(size: 28, weight: .black, design: .monospaced))
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
                 .foregroundColor(.white)
                 .padding(.horizontal, 16)
 
@@ -463,6 +475,7 @@ struct HomeView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.ssTextPrimary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 Text("·")
                     .font(.system(size: 12))
                     .foregroundColor(.ssTextMuted)
@@ -470,6 +483,7 @@ struct HomeView: View {
                     .font(.system(size: 12))
                     .foregroundColor(.ssTextSecondary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
 
             Spacer(minLength: 4)

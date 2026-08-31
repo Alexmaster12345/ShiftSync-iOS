@@ -209,12 +209,18 @@ struct ProfileView: View {
                     }
                 }
 
-                Spacer().frame(height: 120)
+                Spacer().frame(height: tabBarBottomPadding)
             }
             .padding(.horizontal, 16)
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+    }
+
+    private var tabBarBottomPadding: CGFloat {
+        let safeBottom = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?
+            .windows.first?.safeAreaInsets.bottom ?? 0
+        return 82 + safeBottom
     }
 
     // MARK: - Helpers

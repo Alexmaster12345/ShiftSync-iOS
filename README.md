@@ -18,6 +18,20 @@ A shift tracking app for iOS and Apple Watch built with SwiftUI.
 - **Notifications** — Missed shift prompts with quick day-type logging
 - **Dark Mode** — Full dark/light theme support
 
+## Screen Support
+
+Optimized for all iPhone sizes:
+
+| Device | Screen | Notes |
+|---|---|---|
+| iPhone SE (2nd/3rd gen) | 375 × 667 pt | Proportional spacing, no overflow |
+| iPhone 16 / 15 | 390 × 844 pt | Default target |
+| iPhone 16 Pro Max / 15 Pro Max | 430 × 932 pt | Full layout, adaptive padding |
+
+- Login screen uses proportional spacing via `GeometryReader` — fits without scrolling on SE
+- Active shift timer and row text use `minimumScaleFactor` to prevent clipping
+- Bottom scroll padding is safe-area-aware across all devices
+
 ## Requirements
 
 - iOS 17+
