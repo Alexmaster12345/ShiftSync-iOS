@@ -31,33 +31,36 @@ final class WatchShiftManager: NSObject, ObservableObject {
 }
 
 extension WatchShiftManager: WCSessionDelegate {
-    func session(_ session: WCSession,
-                 activationDidCompleteWith state: WCSessionActivationState,
-                 error: Error?) {
-        DispatchQueue.main.async { self.isReachable = session.isReachable }
-        if !session.receivedApplicationContext.isEmpty {
-            apply(session.receivedApplicationContext)
-        }
+    nonisolated func session(_ session: WCSession,
+                             activationDidCompleteWith state: WCSessionActivationState,
+                             error: Error?) {
+        let reachable = session.isReachable
+        let ctx = session.receivedApplicationContext
+        DispatchQueue.main.async { self.isReachable = reachable }
+        if !ctx.isEmpty { apply(ctx) }
     }
 
-    func sessionReachabilityDidChange(_ session: WCSession) {
-        DispatchQueue.main.async { self.isReachable = session.isReachable }
+    nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
+        let reachable = session.isReachable
+        DispatchQueue.main.async { self.isReachable = reachable }
     }
 
-    func session(_ session: WCSession,
-                 didReceiveApplicationContext ctx: [String: Any]) {
+    nonisolated func session(_ session: WCSession,
+                             didReceiveApplicationContext ctx: [String: Any]) {
         apply(ctx)
     }
 
-    private func apply(_ ctx: [String: Any]) {
+    nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}
+    nonisolated func sessionDidDeactivate(_ session: WCSession) { session.activate() }
+
+    private nonisolated func apply(_ ctx: [String: Any]) {
+        let clockedIn  = ctx["isClockedIn"] as? Bool ?? false
+        let earnings   = ctx["earningsToday"] as? Double ?? 0
+        let startDate  = (ctx["shiftStartTime"] as? TimeInterval).map { Date(timeIntervalSince1970: $0) }
         DispatchQueue.main.async {
-            self.isClockedIn   = ctx["isClockedIn"] as? Bool ?? false
-            self.earningsToday = ctx["earningsToday"] as? Double ?? 0
-            if let ts = ctx["shiftStartTime"] as? TimeInterval {
-                self.shiftStartTime = Date(timeIntervalSince1970: ts)
-            } else {
-                self.shiftStartTime = nil
-            }
+            self.isClockedIn   = clockedIn
+            self.earningsToday = earnings
+            self.shiftStartTime = startDate
         }
     }
 }
