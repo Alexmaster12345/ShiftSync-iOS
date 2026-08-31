@@ -2,8 +2,6 @@
 
 A shift tracking app for iOS and Apple Watch built with SwiftUI.
 
-![Home Screen](home_screen.png)
-
 ## Features
 
 - **Clock In / Out** — Start and stop shifts with one tap, synced to Apple Watch
