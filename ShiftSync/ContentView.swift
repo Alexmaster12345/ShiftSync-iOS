@@ -37,13 +37,11 @@ struct MainTabView: View {
     @State private var showAlwaysPermissionAlert = false
 
     var body: some View {
-        activeTabContent
-            // overlay ensures the tab bar is always rendered on top AND receives touches first,
-            // regardless of what UIKit views the NavigationStack creates underneath
-            .overlay(alignment: .bottom) {
-                bottomBar
-            }
-            .ignoresSafeArea(.keyboard)
+        ZStack(alignment: .bottom) {
+            activeTabContent
+                .ignoresSafeArea(.keyboard)
+            bottomBar
+        }
             .tint(.shiftBlue)
             .sheet(isPresented: $showAddSheet) {
                 ManualEntryView(store: store, isPresented: $showAddSheet)
@@ -64,75 +62,69 @@ struct MainTabView: View {
 
     // MARK: - Active Tab
 
-    // TabView handles switching at the UIKit level — guaranteed to work unlike SwiftUI switch/ZStack tricks
+    // Opacity-based switching keeps each NavigationStack alive (preserves nav state)
+    // and avoids the iOS 26 system tab bar that TabView injects.
     private var activeTabContent: some View {
-        TabView(selection: $selectedTab) {
+        ZStack {
             NavigationStack {
                 HomeView(userName: userName, store: store)
                     .navigationBarHidden(true)
-                    .toolbar(.hidden, for: .tabBar)
             }
-            .tag(0)
+            .opacity(selectedTab == 0 ? 1 : 0)
 
             NavigationStack {
                 CalendarView(store: store)
-                    .toolbar(.hidden, for: .tabBar)
             }
-            .tag(1)
+            .opacity(selectedTab == 1 ? 1 : 0)
 
             NavigationStack {
                 WorkplaceTabView()
-                    .toolbar(.hidden, for: .tabBar)
             }
-            .tag(2)
+            .opacity(selectedTab == 2 ? 1 : 0)
 
             NavigationStack {
                 ProfileView(userName: userName, store: store, onLogout: onLogout)
-                    .toolbar(.hidden, for: .tabBar)
             }
-            .tag(3)
+            .opacity(selectedTab == 3 ? 1 : 0)
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
     }
 
-    // MARK: - Bottom Bar (overlay)
+    // MARK: - Bottom Bar
 
     private var bottomBar: some View {
         HStack(spacing: 0) {
-            tabBtn(icon: "house",    label: "Home",      tag: 0)
-            tabBtn(icon: "calendar", label: "Schedule",  tag: 1)
+            tabBtn(icon: "house",    tag: 0)
+            tabBtn(icon: "calendar", tag: 1)
 
-            // + button — floating above bar
+            // + button inside the bar
             Button(action: { showAddSheet = true }) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(Color.shiftBlue)
-                        .frame(width: 46, height: 46)
+                        .frame(width: 38, height: 38)
                         .rotationEffect(.degrees(45))
-                        .shadow(color: Color.shiftBlue.opacity(0.45), radius: 14, x: 0, y: 6)
+                        .shadow(color: Color.shiftBlue.opacity(0.45), radius: 10, x: 0, y: 4)
                     Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
                 }
-                .frame(width: 72, height: 54)
+                .frame(width: 52, height: 44)
+                .offset(y: -10)
             }
             .buttonStyle(.plain)
-            .offset(y: -22)
 
-            tabBtn(icon: "map",      label: "Workplace", tag: 2)
-            tabBtn(icon: "person",   label: "Profile",   tag: 3)
+            tabBtn(icon: "map",      tag: 2)
+            tabBtn(icon: "person",   tag: 3)
         }
-        .padding(.horizontal, 8)
-        .padding(.top, 12)
-        .padding(.bottom, safeAreaBottom > 0 ? safeAreaBottom : 10)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 8)
         .background(
-            UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(
-                topLeading: 26, bottomLeading: 0, bottomTrailing: 0, topTrailing: 26
-            ))
-            .fill(Color(UIColor.systemBackground))
-            .shadow(color: Color.black.opacity(0.12), radius: 20, x: 0, y: -6)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: -4)
         )
-        .ignoresSafeArea(.container, edges: .bottom)
+        .padding(.horizontal, 40)
+        .padding(.bottom, safeAreaBottom > 0 ? 4 : 4)
     }
 
     private var safeAreaBottom: CGFloat {
@@ -140,20 +132,21 @@ struct MainTabView: View {
             .windows.first?.safeAreaInsets.bottom ?? 0
     }
 
-    private func tabBtn(icon: String, label: String, tag: Int) -> some View {
+    private func tabBtn(icon: String, tag: Int) -> some View {
         let isActive = selectedTab == tag
         let activeIcon = icon == "calendar" ? "calendar" : "\(icon).fill"
         return Button(action: { selectedTab = tag }) {
-            VStack(spacing: 5) {
+            ZStack {
+                if isActive {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.shiftBlue)
+                        .frame(width: 38, height: 38)
+                }
                 Image(systemName: isActive ? activeIcon : icon)
-                    .font(.system(size: 22, weight: isActive ? .semibold : .regular))
-                    .foregroundColor(isActive ? .shiftBlue : Color(UIColor.secondaryLabel))
-                Text(label)
-                    .font(.system(size: 10, weight: isActive ? .semibold : .medium))
-                    .foregroundColor(isActive ? .shiftBlue : Color(UIColor.secondaryLabel))
+                    .font(.system(size: 18, weight: isActive ? .semibold : .regular))
+                    .foregroundColor(isActive ? .white : Color(UIColor.secondaryLabel))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 2)
         }
         .buttonStyle(.plain)
     }
