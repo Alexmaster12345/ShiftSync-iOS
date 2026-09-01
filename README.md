@@ -3,7 +3,7 @@
 A shift tracking app for iOS and Apple Watch built with SwiftUI.
 
 <p align="center">
-  <img src="home_screen.png" width="300" alt="ShiftSync Home Screen">
+  <img src="screenshot.png" width="300" alt="ShiftSync Home Screen">
 </p>
 
 ## Features
