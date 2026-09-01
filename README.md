@@ -56,10 +56,11 @@ Optimized for all iPhone sizes:
 
 | Setting | Description |
 |---|---|
-| Hourly Rate | Base pay rate used for all shift calculations |
+| Salary & Currency | Hourly/monthly rate, currency, and work day hours in one screen |
+| Payment Type | Hourly or monthly pay mode |
 | Work Day Hours | Hours counted as one full day (affects day-off pay) |
-| Overtime Multiplier | Pay multiplier for overtime shifts (e.g. 1.5x) |
-| Daily Overtime Threshold | Hours after which overtime kicks in automatically |
+| Overtime Rules | Toggle + daily threshold and multiplier (e.g. 1.5×) |
+| Vacation Days | Annual allowance with used/remaining tracking |
 | Workplace Location | Address used for geofence arrival/departure alerts |
 
 ## Built With
