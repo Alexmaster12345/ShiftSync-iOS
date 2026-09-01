@@ -50,9 +50,6 @@ extension WatchShiftManager: WCSessionDelegate {
         apply(ctx)
     }
 
-    nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}
-    nonisolated func sessionDidDeactivate(_ session: WCSession) { session.activate() }
-
     private nonisolated func apply(_ ctx: [String: Any]) {
         let clockedIn  = ctx["isClockedIn"] as? Bool ?? false
         let earnings   = ctx["earningsToday"] as? Double ?? 0

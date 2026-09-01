@@ -98,50 +98,40 @@ struct MainTabView: View {
     // MARK: - Bottom Bar (overlay)
 
     private var bottomBar: some View {
-        ZStack(alignment: .bottom) {
-            // Tab bar — rounded top corners, white card
-            HStack(spacing: 0) {
-                tabBtn(icon: "house",    label: "Home",      tag: 0)
-                tabBtn(icon: "calendar", label: "Schedule",  tag: 1)
-                Spacer().frame(width: 72)
-                tabBtn(icon: "map",      label: "Workplace", tag: 2)
-                tabBtn(icon: "person",   label: "Profile",   tag: 3)
-            }
-            .padding(.horizontal, 8)
-            .padding(.top, 12)
-            .padding(.bottom, safeAreaBottom > 0 ? safeAreaBottom : 10)
-            .background(
-                UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(
-                    topLeading: 26, bottomLeading: 0, bottomTrailing: 0, topTrailing: 26
-                ))
-                .fill(Color(UIColor.systemBackground))
-                .shadow(color: Color.black.opacity(0.12), radius: 20, x: 0, y: -6)
-            )
+        HStack(spacing: 0) {
+            tabBtn(icon: "house",    label: "Home",      tag: 0)
+            tabBtn(icon: "calendar", label: "Schedule",  tag: 1)
 
-            // + button — rotated rounded square (diamond), floating above bar
-            VStack(spacing: 0) {
-                Button(action: { showAddSheet = true }) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color.shiftBlue)
-                            .frame(width: 46, height: 46)
-                            .rotationEffect(.degrees(45))
-                            .shadow(color: Color.shiftBlue.opacity(0.45), radius: 14, x: 0, y: 6)
-                        Image(systemName: "plus")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    .frame(width: 68, height: 68)
+            // + button — floating above bar
+            Button(action: { showAddSheet = true }) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.shiftBlue)
+                        .frame(width: 46, height: 46)
+                        .rotationEffect(.degrees(45))
+                        .shadow(color: Color.shiftBlue.opacity(0.45), radius: 14, x: 0, y: 6)
+                    Image(systemName: "plus")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
                 }
-                .buttonStyle(.plain)
-                .offset(y: 4)
-
-                Color.clear
-                    .frame(height: safeAreaBottom + 26)
-                    .allowsHitTesting(false)
+                .frame(width: 72, height: 54)
             }
-            .frame(width: 72)
+            .buttonStyle(.plain)
+            .offset(y: -22)
+
+            tabBtn(icon: "map",      label: "Workplace", tag: 2)
+            tabBtn(icon: "person",   label: "Profile",   tag: 3)
         }
+        .padding(.horizontal, 8)
+        .padding(.top, 12)
+        .padding(.bottom, safeAreaBottom > 0 ? safeAreaBottom : 10)
+        .background(
+            UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(
+                topLeading: 26, bottomLeading: 0, bottomTrailing: 0, topTrailing: 26
+            ))
+            .fill(Color(UIColor.systemBackground))
+            .shadow(color: Color.black.opacity(0.12), radius: 20, x: 0, y: -6)
+        )
         .ignoresSafeArea(.container, edges: .bottom)
     }
 
