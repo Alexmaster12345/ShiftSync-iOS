@@ -2,24 +2,34 @@ import SwiftUI
 
 struct WatchContentView: View {
     @EnvironmentObject private var manager: WatchShiftManager
+    @State private var showNotificationAlert = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { _ in
-            VStack(spacing: 8) {
-                statusIcon
-                if manager.isClockedIn {
-                    elapsedLabel
+            ScrollView {
+                VStack(spacing: 8) {
+                    statusIcon
+                    if manager.isClockedIn {
+                        elapsedLabel
+                    }
+                    actionButton
+                    earningsLabel
+                    testNotificationButton
+                    notificationSettingsButton
+                    if !manager.isReachable {
+                        Text("iPhone not reachable")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
                 }
-                actionButton
-                earningsLabel
-                if !manager.isReachable {
-                    Text("iPhone not reachable")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
+                .padding(.horizontal, 8)
             }
-            .padding(.horizontal, 8)
+        }
+        .alert(manager.notificationStatusLabel, isPresented: $showNotificationAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(manager.notificationStatusMessage)
         }
     }
 
@@ -69,6 +79,37 @@ struct WatchContentView: View {
                     .foregroundColor(.secondary)
             }
         }
+    }
+
+    private var testNotificationButton: some View {
+        Button(action: { manager.sendTestNotification() }) {
+            Label(manager.testSent ? "Sent ✓" : "Test Notification",
+                  systemImage: manager.testSent ? "checkmark.circle.fill" : "bell.badge")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 7)
+                .background(manager.testSent ? Color.green : Color.orange)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(manager.testSent)
+    }
+
+    private var notificationSettingsButton: some View {
+        Button(action: {
+            manager.refreshNotificationStatus()
+            showNotificationAlert = true
+        }) {
+            Label("Notification Settings", systemImage: "gearshape.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 7)
+                .background(Color.blue.opacity(0.8))
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     private var elapsedString: String {

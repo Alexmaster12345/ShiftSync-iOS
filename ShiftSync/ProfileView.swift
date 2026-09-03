@@ -393,7 +393,9 @@ struct SecurityPrivacyView: View {
 struct NotificationPrefsView: View {
     @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var locationManager = LocationManager.shared
+    @ObservedObject private var watchSession = WatchSessionManager.shared
     @Environment(\.dismiss) private var dismiss
+    @State private var showWatchResultAlert = false
 
     var body: some View {
         ScrollView {
@@ -440,6 +442,29 @@ struct NotificationPrefsView: View {
                         }
                         .padding(.horizontal, 16).padding(.vertical, 14)
                     }
+
+                    Divider().background(Color.darkBg)
+
+                    Button(action: {
+                        watchSession.watchTestResult = nil
+                        watchSession.sendTestNotificationToWatch()
+                    }) {
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
+                                Image(systemName: "applewatch").font(.system(size: 14)).foregroundColor(.tealAccent)
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Test Apple Watch Notification").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                Text(watchStatusLabel)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(watchStatusColor)
+                            }
+                            Spacer()
+                            Image(systemName: "paperplane.fill").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 14)
+                    }
                 }
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -450,6 +475,24 @@ struct NotificationPrefsView: View {
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+        .onChange(of: watchSession.watchTestResult) { _, result in
+            showWatchResultAlert = result != nil
+        }
+        .alert("Apple Watch", isPresented: $showWatchResultAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(watchSession.watchTestResult ?? "")
+        }
+    }
+
+    private var watchStatusLabel: String {
+        if !watchSession.isWatchAppInstalled { return "ShiftSync not installed on watch" }
+        return watchSession.isWatchReachable ? "Watch is connected" : "Watch may be unreachable"
+    }
+
+    private var watchStatusColor: Color {
+        if !watchSession.isWatchAppInstalled { return .orangeAccent }
+        return watchSession.isWatchReachable ? .greenAccent : .ssTextMuted
     }
 }
 

@@ -179,6 +179,27 @@ class LocationManager: NSObject, ObservableObject {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [missedDayID])
     }
 
+    /// Cancel today's absence check and reschedule starting from tomorrow.
+    /// Call this when the user clocks out so they won't get a "missed work" alert for a day they worked.
+    func rescheduleDailyAbsenceCheckFromTomorrow() {
+        cancelDailyAbsenceCheck()
+        guard AppSettings.shared.locationAlertsEnabled,
+              AppSettings.shared.hasWorkplaceCoordinates else { return }
+        let cal = Calendar.current
+        guard let tomorrow = cal.date(byAdding: .day, value: 1, to: Date()),
+              let tomorrowAt6 = cal.date(bySettingHour: 18, minute: 0, second: 0, of: tomorrow) else { return }
+        let interval = max(60, tomorrowAt6.timeIntervalSinceNow)
+        let content            = UNMutableNotificationContent()
+        content.title          = "Didn't make it to work today?"
+        content.body           = "Tap to log a sick day, vacation, or formation day."
+        content.sound          = .default
+        content.categoryIdentifier = categoryMissedDay
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: missedDayID, content: content,
+                                  trigger: UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false))
+        )
+    }
+
     private func startRegion(center: CLLocationCoordinate2D) {
         guard clManager.authorizationStatus == .authorizedAlways else {
             DispatchQueue.main.async { self.isMonitoring = false }
@@ -193,6 +214,33 @@ class LocationManager: NSObject, ObservableObject {
         region.notifyOnExit  = true
         clManager.startMonitoring(for: region)
         DispatchQueue.main.async { self.isMonitoring = true }
+
+        // iOS only fires didEnterRegion when crossing INTO the region from outside.
+        // If the user enables alerts / sets their workplace while already at the
+        // office, no arrival event ever fires. Ask for the current state now so we
+        // can still prompt a clock-in when they're already inside the geofence.
+        clManager.requestState(for: region)
+    }
+
+    /// Fires the arrival prompt + notification, guarding against duplicates.
+    /// Shared by both the live entry event and the initial state check.
+    private func handleArrival() {
+        // Don't notify if already clocked in
+        if ShiftStore.shared.activeShiftStart != nil { return }
+
+        // Cooldown: suppress duplicate arrival alerts within 30 minutes (GPS jitter)
+        let lastArrival = UserDefaults.standard.double(forKey: lastArrivalKey)
+        if lastArrival > 0, Date().timeIntervalSince1970 - lastArrival < 1800 { return }
+
+        AlertLog.shared.addArrival()
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastArrivalKey)
+        cancelDailyAbsenceCheck()
+        deliver(
+            title: "You've arrived at work!",
+            body: "Tap to clock in, or use the Clock In button.",
+            id: "arrive_\(Int(Date().timeIntervalSince1970))",
+            category: categoryArrive
+        )
     }
 
     private func deliver(title: String, body: String, id: String,
@@ -233,16 +281,17 @@ extension LocationManager: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         guard region.identifier == regionID else { return }
-        AlertLog.shared.addArrival()
-        // Record today as a worked day and suppress the absence notification
-        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastArrivalKey)
-        cancelDailyAbsenceCheck()
-        deliver(
-            title: "You've arrived at work!",
-            body: "Tap to clock in, or use the Clock In button.",
-            id: "arrive_\(Int(Date().timeIntervalSince1970))",
-            category: categoryArrive
-        )
+        handleArrival()
+    }
+
+    /// Called in response to `requestState(for:)` right after monitoring starts.
+    /// Lets us prompt a clock-in when the user is already inside the geofence
+    /// (e.g. they set their workplace or enabled alerts while at the office).
+    func locationManager(_ manager: CLLocationManager,
+                         didDetermineState state: CLRegionState,
+                         for region: CLRegion) {
+        guard region.identifier == regionID, state == .inside else { return }
+        handleArrival()
     }
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {

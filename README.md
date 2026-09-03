@@ -17,10 +17,19 @@ A shift tracking app for iOS and Apple Watch built with SwiftUI.
 - **Activity Feed** — Recent shifts with duration, pay, and shift type badges
 - **Calendar View** — Monthly calendar showing days with logged shifts
 - **Export Reports** — Export shift data by period (weekly, monthly, custom)
-- **Workplace Geofencing** — Location-based arrival/departure notifications
-- **Apple Watch App** — Clock in/out and view active shift directly from your wrist
+- **Workplace Geofencing** — Location-based arrival/departure notifications, including a prompt when you're *already* inside the workplace zone at the time you enable alerts
+- **Apple Watch App** — Clock in/out from your wrist with instant on-watch confirmation notifications, plus built-in notification permission checker and test button
+- **Test Watch Notifications from iPhone** — Settings → Notifications → *Test Apple Watch Notification* relays a request to the watch (with a background-queued fallback via `transferUserInfo` when the watch isn't live-reachable)
 - **Notifications** — Missed shift prompts with quick day-type logging
 - **Dark Mode** — Full dark/light theme support
+
+## Recent Improvements
+
+- **Reliable custom tab bar** — Rebuilt using `.safeAreaInset(edge: .bottom)` so every tab button reliably receives taps. The previous `ZStack` overlay let the underlying `ScrollView` win the hit-test race in the overlapping region, causing tabs (other than Home / the +) to occasionally not respond.
+- **"Already at work" arrival detection** — `LocationManager` now calls `requestState(for:)` right after starting to monitor and handles `didDetermineState`, so the arrival prompt fires even when you enable location alerts (or set your workplace) while already inside the geofence.
+- **Watch clock-in/out feedback** — Watch clock actions now use `sendMessage(..., replyHandler:, errorHandler:)` and fire a local notification on the watch confirming success ("Clocked In ✓") or a clear failure reason if the iPhone can't be reached. The phone implements the reply-based `didReceiveMessage` variant so replies never time out.
+- **`WCErrorCodeWatchAppNotInstalled` handling** — `WatchSessionManager` publishes `isWatchAppInstalled` and gates every `updateApplicationContext` / `sendMessage` / `transferUserInfo` call behind it, eliminating repeated console error spam when the Watch app isn't installed and surfacing an actionable message in Settings instead.
+- **iOS-only target hygiene** — The main app target was ported off the multiplatform template (`SDKROOT = auto` → `iphoneos`), and leftover macOS-only sandbox/entitlement keys (`ENABLE_APP_SANDBOX`, `ENABLE_USER_SELECTED_FILES`, `REGISTER_APP_GROUPS`, `MACOSX_DEPLOYMENT_TARGET`, `XROS_DEPLOYMENT_TARGET`, cross-platform `LD_RUNPATH_SEARCH_PATHS`) were removed. These were the root cause of the *"ShiftSync Watch app can't be installed at this time"* error, because iOS provisioning rejects apps carrying macOS Sandbox entitlements and Watch companions can only pair with a genuine iPhone-only host.
 
 ## Screen Support
 
@@ -62,6 +71,7 @@ Optimized for all iPhone sizes:
 | Overtime Rules | Toggle + daily threshold and multiplier (e.g. 1.5×) |
 | Vacation Days | Annual allowance with used/remaining tracking |
 | Workplace Location | Address used for geofence arrival/departure alerts |
+| Notifications | iOS notification settings shortcut + Apple Watch test-notification relay |
 
 ## Built With
 

@@ -104,6 +104,8 @@ class ShiftStore: ObservableObject {
         activeShiftStart = now
         UserDefaults.standard.set(now.timeIntervalSince1970, forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
+        // Cancel "didn't make it to work?" alert — user is clearly working today
+        LocationManager.shared.cancelDailyAbsenceCheck()
     }
 
     func clockOut() {
@@ -124,6 +126,7 @@ class ShiftStore: ObservableObject {
                 activeShiftStart = nil
                 UserDefaults.standard.removeObject(forKey: activeKey)
                 WatchSessionManager.shared.sendStateUpdate()
+                LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
                 return
             }
         }
@@ -135,6 +138,7 @@ class ShiftStore: ObservableObject {
         activeShiftStart = nil
         UserDefaults.standard.removeObject(forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
+        LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
     }
 
     func deleteEntry(id: UUID) {

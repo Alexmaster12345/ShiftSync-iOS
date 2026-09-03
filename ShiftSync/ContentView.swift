@@ -37,55 +37,47 @@ struct MainTabView: View {
     @State private var showAlwaysPermissionAlert = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            activeTabContent
-                .ignoresSafeArea(.keyboard)
+        // The tab bar is hosted in a bottom safeAreaInset instead of being floated
+        // in a ZStack over the content. Overlaying interactive controls on top of a
+        // full-screen NavigationStack/ScrollView causes the scroll view to win the
+        // hit-test race for touches in the overlap region — which is exactly why only
+        // some bar buttons responded. safeAreaInset gives the bar its own reserved,
+        // non-overlapping region, so every button reliably receives taps.
+        Group {
+            switch selectedTab {
+            case 0:
+                NavigationStack {
+                    HomeView(userName: userName, store: store)
+                        .navigationBarHidden(true)
+                }
+            case 1:
+                NavigationStack { CalendarView(store: store) }
+            case 2:
+                NavigationStack { WorkplaceTabView() }
+            default:
+                NavigationStack { ProfileView(userName: userName, store: store, onLogout: onLogout) }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             bottomBar
         }
-            .tint(.shiftBlue)
-            .sheet(isPresented: $showAddSheet) {
-                ManualEntryView(store: store, isPresented: $showAddSheet)
+        .ignoresSafeArea(.keyboard)
+        .tint(.shiftBlue)
+        .sheet(isPresented: $showAddSheet) {
+            ManualEntryView(store: store, isPresented: $showAddSheet)
+        }
+        .onChange(of: locationManager.authStatus) { _, status in
+            if status == .authorizedWhenInUse,
+               AppSettings.shared.locationAlertsEnabled {
+                showAlwaysPermissionAlert = true
             }
-            .onChange(of: locationManager.authStatus) { _, status in
-                if status == .authorizedWhenInUse,
-                   AppSettings.shared.locationAlertsEnabled {
-                    showAlwaysPermissionAlert = true
-                }
-            }
-            .alert("One More Step Required", isPresented: $showAlwaysPermissionAlert) {
-                Button("Open Settings") { LocationManager.openSettings() }
-                Button("Later", role: .cancel) {}
-            } message: {
-                Text("To receive arrival & departure notifications:\n\n1. Tap \"Open Settings\"\n2. Tap \"Location\"\n3. Select \"Always\"\n\nWithout this, notifications only work while the app is open.")
-            }
-    }
-
-    // MARK: - Active Tab
-
-    // Opacity-based switching keeps each NavigationStack alive (preserves nav state)
-    // and avoids the iOS 26 system tab bar that TabView injects.
-    private var activeTabContent: some View {
-        ZStack {
-            NavigationStack {
-                HomeView(userName: userName, store: store)
-                    .navigationBarHidden(true)
-            }
-            .opacity(selectedTab == 0 ? 1 : 0)
-
-            NavigationStack {
-                CalendarView(store: store)
-            }
-            .opacity(selectedTab == 1 ? 1 : 0)
-
-            NavigationStack {
-                WorkplaceTabView()
-            }
-            .opacity(selectedTab == 2 ? 1 : 0)
-
-            NavigationStack {
-                ProfileView(userName: userName, store: store, onLogout: onLogout)
-            }
-            .opacity(selectedTab == 3 ? 1 : 0)
+        }
+        .alert("One More Step Required", isPresented: $showAlwaysPermissionAlert) {
+            Button("Open Settings") { LocationManager.openSettings() }
+            Button("Later", role: .cancel) {}
+        } message: {
+            Text("To receive arrival & departure notifications:\n\n1. Tap \"Open Settings\"\n2. Tap \"Location\"\n3. Select \"Always\"\n\nWithout this, notifications only work while the app is open.")
         }
     }
 
@@ -109,7 +101,7 @@ struct MainTabView: View {
                         .foregroundColor(.white)
                 }
                 .frame(width: 52, height: 44)
-                .offset(y: -10)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -124,7 +116,8 @@ struct MainTabView: View {
                 .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: -4)
         )
         .padding(.horizontal, 40)
-        .padding(.bottom, safeAreaBottom > 0 ? 4 : 4)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
     }
 
     private var safeAreaBottom: CGFloat {
@@ -146,7 +139,8 @@ struct MainTabView: View {
                     .font(.system(size: 18, weight: isActive ? .semibold : .regular))
                     .foregroundColor(isActive ? .white : Color(UIColor.secondaryLabel))
             }
-            .frame(maxWidth: .infinity)
+            .frame(width: 52, height: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
