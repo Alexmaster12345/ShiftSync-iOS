@@ -1,5 +1,6 @@
 import SwiftUI
 import WatchConnectivity
+import UniformTypeIdentifiers
 
 struct ProfileView: View {
     let userName: String
@@ -59,6 +60,13 @@ struct ProfileView: View {
                     navRow(icon: "lock.shield.fill", label: "Security & Privacy", color: .shiftBlue, destination: AnyView(SecurityPrivacyView(store: store, onLogout: onLogout)))
                 }
 
+                // ── Legal ────────────────────────────────────────────────
+                settingsSection(title: "LEGAL") {
+                    navRow(icon: "doc.text.fill", label: "Terms of Use", color: .ssTextSecondary, destination: AnyView(TermsOfUseView()))
+                    Divider().background(Color.darkBg)
+                    navRow(icon: "hand.raised.fill", label: "Privacy Policy", color: .ssTextSecondary, destination: AnyView(PrivacyPolicyView()))
+                }
+
                 // ── Pay Settings ────────────────────────────────────────
                 settingsSection(title: "PAY SETTINGS") {
                     navRow(icon: "bag.fill", label: "Salary & Currency", color: .greenAccent,
@@ -82,12 +90,14 @@ struct ProfileView: View {
                                     .font(.system(size: 22))
                                     .foregroundColor(settings.vacationDaysPerYear > 0 ? .shiftBlue : .ssTextMuted)
                             }
+                            .accessibilityLabel("Decrease vacation days per year")
                             Text("\(settings.vacationDaysPerYear)")
                                 .font(.system(size: 16, weight: .bold)).foregroundColor(.ssTextPrimary)
                                 .frame(width: 30, alignment: .center)
                             Button(action: { settings.vacationDaysPerYear += 1 }) {
                                 Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.shiftBlue)
                             }
+                            .accessibilityLabel("Increase vacation days per year")
                         }
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
@@ -121,12 +131,28 @@ struct ProfileView: View {
                     }
                 }
 
+                // ── About ────────────────────────────────────────────────
+                VStack(spacing: 2) {
+                    Text("ShiftSync v\(appVersion)")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.ssTextMuted)
+                    Text("© 2026 ShiftSync. All rights reserved.")
+                        .font(.system(size: 11))
+                        .foregroundColor(.ssTextMuted)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 8)
+
                 Spacer().frame(height: tabBarBottomPadding)
             }
             .padding(.horizontal, 16)
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+    }
+
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
 
     private var tabBarBottomPadding: CGFloat {
@@ -309,6 +335,10 @@ struct SecurityPrivacyView: View {
     let onLogout: () -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var showClearConfirm = false
+    @State private var showImporter = false
+    @State private var importAlertTitle = ""
+    @State private var importAlertMessage = ""
+    @State private var showImportAlert = false
 
     var body: some View {
         ScrollView {
@@ -324,6 +354,47 @@ struct SecurityPrivacyView: View {
                     privacyRow(icon: "person.slash.fill", color: .tealAccent,
                                title: "No account required",
                                subtitle: "ShiftSync works without sign-up. Your data stays private and is never shared.")
+                }
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                // Data backup
+                VStack(spacing: 0) {
+                    Button(action: exportBackup) {
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 38, height: 38)
+                                Image(systemName: "square.and.arrow.up").font(.system(size: 15)).foregroundColor(.tealAccent)
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Export Backup (JSON)").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                Text("Save your shift records to transfer to a new device")
+                                    .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 14)
+                    }
+
+                    Divider().background(Color.darkBg).padding(.leading, 62)
+
+                    Button(action: { showImporter = true }) {
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 38, height: 38)
+                                Image(systemName: "square.and.arrow.down").font(.system(size: 15)).foregroundColor(.shiftBlue)
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Import Backup").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                Text("Restore shift records from a previously exported file")
+                                    .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 14)
+                    }
                 }
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -370,6 +441,42 @@ struct SecurityPrivacyView: View {
         } message: {
             Text("This will permanently delete all your shifts, settings, and profile info. This cannot be undone.")
         }
+        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json]) { result in
+            switch result {
+            case .success(let url):
+                let accessed = url.startAccessingSecurityScopedResource()
+                defer { if accessed { url.stopAccessingSecurityScopedResource() } }
+                if let data = try? Data(contentsOf: url), store.importBackupData(data) {
+                    importAlertTitle   = "Backup Restored"
+                    importAlertMessage = "Your shift records have been restored from the backup file."
+                } else {
+                    importAlertTitle   = "Import Failed"
+                    importAlertMessage = "That file doesn't look like a valid ShiftSync backup."
+                }
+            case .failure:
+                importAlertTitle   = "Import Failed"
+                importAlertMessage = "Couldn't read that file."
+            }
+            showImportAlert = true
+        }
+        .alert(importAlertTitle, isPresented: $showImportAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(importAlertMessage)
+        }
+    }
+
+    private func exportBackup() {
+        guard let data = store.exportBackupData() else { return }
+        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShiftSync-Backup-\(df.string(from: Date())).json")
+        try? data.write(to: url)
+        let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let root = scene.windows.first?.rootViewController {
+            root.present(vc, animated: true)
+        }
     }
 
     private func privacyRow(icon: String, color: Color, title: String, subtitle: String) -> some View {
@@ -387,6 +494,104 @@ struct SecurityPrivacyView: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 14)
     }
+}
+
+// MARK: - Terms of Use
+
+struct TermsOfUseView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                navHeader(title: "Terms of Use", dismiss: dismiss)
+
+                legalCard(
+                    icon: "info.circle.fill", color: .shiftBlue,
+                    title: "Informational Tool Only",
+                    body: "ShiftSync is provided as a personal record-keeping tool to help you track your own shifts, hours, and estimated pay. It is not a substitute for your employer's official timekeeping or payroll system."
+                )
+                legalCard(
+                    icon: "person.fill.checkmark", color: .orangeAccent,
+                    title: "Your Responsibility",
+                    body: "You are solely responsible for verifying the accuracy of any hours, pay calculations, or records logged in this app before relying on them for payroll, invoicing, tax, or any other employment-related purpose."
+                )
+                legalCard(
+                    icon: "exclamationmark.shield.fill", color: .redAccent,
+                    title: "Limitation of Liability",
+                    body: "The developer of ShiftSync assumes no liability for payroll errors, missed or misrecorded shifts, incorrect pay calculations, or any employment disputes arising from use of this app. The app is provided \"as is\" without warranties of any kind."
+                )
+                legalCard(
+                    icon: "location.fill", color: .tealAccent,
+                    title: "Location & Notifications",
+                    body: "Optional location-based reminders and notifications are generated entirely on your device to help you remember to clock in or out. They are provided for convenience only and should not be relied upon as your sole record of attendance."
+                )
+
+                Spacer().frame(height: 32)
+            }
+            .padding(.horizontal, 16)
+        }
+        .background(Color.darkBg.ignoresSafeArea())
+        .navigationBarHidden(true)
+    }
+}
+
+// MARK: - Privacy Policy
+
+struct PrivacyPolicyView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                navHeader(title: "Privacy Policy", dismiss: dismiss)
+
+                legalCard(
+                    icon: "checkmark.shield.fill", color: .greenAccent,
+                    title: "No Data Is Collected",
+                    body: "ShiftSync does not collect, transmit, or sell any personal data. There are no servers, no accounts, and no analytics or advertising SDKs in this app."
+                )
+                legalCard(
+                    icon: "iphone", color: .shiftBlue,
+                    title: "Everything Stays On Your Device",
+                    body: "Shift entries, pay settings, your profile info, and your workplace location (if set) are stored only in this app's local storage on your device. This data is included in your standard iOS device backups (iCloud or computer), which are controlled by your iOS settings — not by this app."
+                )
+                legalCard(
+                    icon: "location.fill", color: .tealAccent,
+                    title: "Location Data",
+                    body: "If you enable Workplace Geofencing, your location is used solely to detect arrival/departure at the workplace you set, entirely on-device, so the app can remind you to clock in or out. It is never transmitted anywhere."
+                )
+                legalCard(
+                    icon: "square.and.arrow.up.on.square.fill", color: .orangeAccent,
+                    title: "Your Choice to Export",
+                    body: "The only way data leaves this app is if you explicitly export a report or backup file yourself (e.g. via AirDrop, email, or Files)."
+                )
+
+                Spacer().frame(height: 32)
+            }
+            .padding(.horizontal, 16)
+        }
+        .background(Color.darkBg.ignoresSafeArea())
+        .navigationBarHidden(true)
+    }
+}
+
+private func legalCard(icon: String, color: Color, title: String, body: String) -> some View {
+    HStack(alignment: .top, spacing: 12) {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8).fill(color.opacity(0.15)).frame(width: 38, height: 38)
+            Image(systemName: icon).font(.system(size: 15)).foregroundColor(color)
+        }
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title).font(.system(size: 15, weight: .semibold)).foregroundColor(.ssTextPrimary)
+            Text(body).font(.system(size: 13)).foregroundColor(.ssTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        Spacer(minLength: 0)
+    }
+    .padding(14)
+    .background(Color.darkCard)
+    .clipShape(RoundedRectangle(cornerRadius: 16))
 }
 
 // MARK: - Notification Preferences
@@ -649,12 +854,14 @@ struct OvertimeRulesView: View {
                 Button(action: { if value.wrappedValue > range.lowerBound { value.wrappedValue = max(range.lowerBound, value.wrappedValue - step) } }) {
                     Image(systemName: "minus.circle.fill").font(.system(size: 22)).foregroundColor(color)
                 }.buttonStyle(.plain)
+                .accessibilityLabel("Decrease \(label)")
                 Text(formattedHours(value.wrappedValue))
                     .font(.system(size: 14, weight: .bold)).foregroundColor(.ssTextPrimary)
                     .frame(minWidth: 36)
                 Button(action: { if value.wrappedValue < range.upperBound { value.wrappedValue = min(range.upperBound, value.wrappedValue + step) } }) {
                     Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(color)
                 }.buttonStyle(.plain)
+                .accessibilityLabel("Increase \(label)")
             }
         }
         .padding(.horizontal, 16).padding(.vertical, 14)
@@ -770,6 +977,7 @@ struct SalarySettingsView: View {
                                     Image(systemName: "minus.circle.fill").font(.system(size: 22))
                                         .foregroundColor(settings.workDayHours > 1 ? .tealAccent : .ssTextMuted)
                                 }
+                                .accessibilityLabel("Decrease work day hours")
                                 let h = settings.workDayHours
                                 Text(h == h.rounded() ? "\(Int(h))h" : String(format: "%.1fh", h))
                                     .font(.system(size: 16, weight: .bold)).foregroundColor(.ssTextPrimary)
@@ -777,6 +985,7 @@ struct SalarySettingsView: View {
                                 Button(action: { if settings.workDayHours < 24 { settings.workDayHours = min(24, settings.workDayHours + 0.5) } }) {
                                     Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.tealAccent)
                                 }
+                                .accessibilityLabel("Increase work day hours")
                             }
                         }
                         .padding(.horizontal, 16).padding(.vertical, 12)

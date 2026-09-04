@@ -126,6 +126,7 @@ struct ManualEntryView: View {
                 Button(action: {
                     if displayMonth == 0 { displayMonth = 11; displayYear -= 1 } else { displayMonth -= 1 }
                 }) { Image(systemName: "chevron.left").foregroundColor(.shiftBlue) }
+                .accessibilityLabel("Previous Month")
                 Spacer()
                 Text("\(Self.monthNames[displayMonth]) \(String(displayYear))")
                     .font(.system(size: 15, weight: .bold)).foregroundColor(.ssTextPrimary)
@@ -133,6 +134,7 @@ struct ManualEntryView: View {
                 Button(action: {
                     if displayMonth == 11 { displayMonth = 0; displayYear += 1 } else { displayMonth += 1 }
                 }) { Image(systemName: "chevron.right").foregroundColor(.shiftBlue) }
+                .accessibilityLabel("Next Month")
             }
             .padding(.horizontal, 4)
 
@@ -335,12 +337,14 @@ struct ManualEntryView: View {
                     Button(action: { if breakMinutes >= 15 { breakMinutes -= 15 } }) {
                         Image(systemName: "minus.circle.fill").font(.system(size: 22)).foregroundColor(.shiftBlue)
                     }
+                    .accessibilityLabel("Decrease unpaid break")
                     Text("\(breakMinutes) min")
                         .font(.system(size: 14, weight: .semibold)).foregroundColor(.ssTextPrimary)
                         .frame(width: 58, alignment: .center)
                     Button(action: { breakMinutes += 15 }) {
                         Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.shiftBlue)
                     }
+                    .accessibilityLabel("Increase unpaid break")
                 }
             }
         }
@@ -493,10 +497,12 @@ struct EditShiftView: View {
                                     Image(systemName: "minus.circle.fill").font(.system(size: 24))
                                         .foregroundColor(vacationDays > 1 ? .shiftBlue : .ssTextMuted)
                                 }
+                                .accessibilityLabel("Decrease days")
                                 Text("\(vacationDays)").font(.system(size: 18, weight: .bold)).foregroundColor(.ssTextPrimary).frame(width: 28, alignment: .center)
                                 Button(action: { vacationDays += 1 }) {
                                     Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundColor(.shiftBlue)
                                 }
+                                .accessibilityLabel("Increase days")
                             }
                         }
                         .padding(14)
@@ -547,10 +553,12 @@ struct EditShiftView: View {
                                     Image(systemName: "minus.circle.fill").font(.system(size: 24))
                                         .foregroundColor(breakMinutes >= 15 ? .shiftBlue : .ssTextMuted)
                                 }
+                                .accessibilityLabel("Decrease unpaid break")
                                 Text("\(breakMinutes) min").font(.system(size: 14, weight: .semibold)).foregroundColor(.ssTextPrimary).frame(width: 60, alignment: .center)
                                 Button(action: { breakMinutes += 15 }) {
                                     Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundColor(.shiftBlue)
                                 }
+                                .accessibilityLabel("Increase unpaid break")
                             }
                         }
                         .padding(14)

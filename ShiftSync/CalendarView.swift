@@ -188,6 +188,7 @@ struct CalendarView: View {
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .frame(width: 32, height: 32)
             }
+            .accessibilityLabel("Previous Month")
             Spacer()
             Text("\(Self.monthNames[displayMonth]) \(String(displayYear))")
                 .font(.system(size: 17, weight: .bold))
@@ -199,6 +200,7 @@ struct CalendarView: View {
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .frame(width: 32, height: 32)
             }
+            .accessibilityLabel("Next Month")
         }
         .padding(.horizontal, 4)
     }

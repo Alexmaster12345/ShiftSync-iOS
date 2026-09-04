@@ -211,6 +211,7 @@ struct HomeView: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(alertLog.unreadCount > 0 ? "Notifications, \(alertLog.unreadCount) unread" : "Notifications")
 
                 Circle()
                     .fill(LinearGradient(colors: [.shiftBlue, .shiftBlueDark],

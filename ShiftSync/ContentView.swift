@@ -83,8 +83,8 @@ struct MainTabView: View {
 
     private var bottomBar: some View {
         HStack(spacing: 0) {
-            tabBtn(icon: "house",    tag: 0)
-            tabBtn(icon: "calendar", tag: 1)
+            tabBtn(icon: "house",    tag: 0, label: "Home")
+            tabBtn(icon: "calendar", tag: 1, label: "Calendar")
 
             // + button inside the bar
             Button(action: { showAddSheet = true }) {
@@ -102,9 +102,10 @@ struct MainTabView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Add Shift")
 
-            tabBtn(icon: "map",      tag: 2)
-            tabBtn(icon: "person",   tag: 3)
+            tabBtn(icon: "map",      tag: 2, label: "Workplace")
+            tabBtn(icon: "person",   tag: 3, label: "Profile")
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 8)
@@ -123,7 +124,7 @@ struct MainTabView: View {
             .windows.first?.safeAreaInsets.bottom ?? 0
     }
 
-    private func tabBtn(icon: String, tag: Int) -> some View {
+    private func tabBtn(icon: String, tag: Int, label: String) -> some View {
         let isActive = selectedTab == tag
         let activeIcon = icon == "calendar" ? "calendar" : "\(icon).fill"
         return Button(action: { selectedTab = tag }) {
@@ -141,6 +142,8 @@ struct MainTabView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isActive ? [.isSelected] : [])
     }
 }
 

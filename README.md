@@ -22,6 +22,7 @@ A shift tracking app for iOS and Apple Watch built with SwiftUI.
 - **Clock In/Out Notifications** — Every clock in/out fires an instant local notification ("Clocked In ✓" / "Clocked Out ✓"). watchOS mirrors these to a paired Apple Watch automatically — no Watch app installation required
 - **Notifications** — Missed shift prompts with quick day-type logging
 - **Dark Mode** — Full dark/light theme support
+- **Backup & Restore** — Export all shift records to a JSON file and re-import them on another device (Profile → Security & Privacy)
 
 ## Recent Improvements
 
@@ -73,6 +74,8 @@ Optimized for all iPhone sizes:
 | Vacation Days | Annual allowance with used/remaining tracking |
 | Workplace Location | Address used for geofence arrival/departure alerts |
 | Notifications | Toggle for arrival/departure geofence alerts |
+| Legal | Terms of Use and Privacy Policy, viewable in-app |
+| Data Backup | Export/Import shift records as JSON (Security & Privacy) |
 
 ## Built With
 
@@ -87,7 +90,8 @@ ShiftSync collects no data and has no backend — everything is stored locally o
 
 ## Roadmap
 
-- Manual Export/Restore (JSON) so users switching devices without a full backup/restore don't lose data
+- **Live Activities & Dynamic Island** — real-time shift duration and live earnings on the Lock Screen while clocked in. Requires a Widget Extension target + App Group to share state with the main app.
+- **Home Screen Widgets** — one-tap clock in/out and a weekly earnings summary. Same App Group/extension prerequisite as above.
 - Email sign-in (currently disabled — placeholder shown on the login screen)
 
 ## License

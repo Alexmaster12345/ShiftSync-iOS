@@ -68,6 +68,7 @@ struct MapLocationPickerView: View {
                             .foregroundColor(.ssTextMuted)
                             .font(.system(size: 15))
                     }
+                    .accessibilityLabel("Clear search")
                 }
             }
             .padding(.horizontal, 14)

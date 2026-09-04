@@ -13,6 +13,7 @@ func navHeader(title: String, dismiss: DismissAction) -> some View {
                     .background(Color.darkCard)
                     .clipShape(Circle())
             }
+            .accessibilityLabel("Back")
             Spacer()
         }
         Text(title)

@@ -99,6 +99,35 @@ class ShiftStore: ObservableObject {
         UserDefaults.standard.set(data, forKey: entriesKey)
     }
 
+    // MARK: Backup / Restore
+
+    private struct Backup: Codable {
+        var entries: [ShiftEntry]
+        var activeShiftStart: Date?
+    }
+
+    /// Encodes all shift entries (and any in-progress shift) as JSON, so users can
+    /// back up or transfer their records when switching devices without relying on
+    /// a full system backup.
+    func exportBackupData() -> Data? {
+        try? JSONEncoder().encode(Backup(entries: entries, activeShiftStart: activeShiftStart))
+    }
+
+    @discardableResult
+    func importBackupData(_ data: Data) -> Bool {
+        guard let backup = try? JSONDecoder().decode(Backup.self, from: data) else { return false }
+        entries = backup.entries
+        activeShiftStart = backup.activeShiftStart
+        saveEntries()
+        if let start = backup.activeShiftStart {
+            UserDefaults.standard.set(start.timeIntervalSince1970, forKey: activeKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: activeKey)
+        }
+        WatchSessionManager.shared.sendStateUpdate()
+        return true
+    }
+
     // MARK: Clock In / Out
     func clockIn() {
         let now = Date()
