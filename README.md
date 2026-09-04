@@ -47,9 +47,9 @@ Optimized for all iPhone sizes:
 
 ## Requirements
 
-- iOS 17+
-- watchOS 10+ (for Watch app)
-- Xcode 15+
+- iOS 26+
+- watchOS 26+ (for Watch app)
+- Xcode 26+
 
 ## Getting Started
 
