@@ -1,6 +1,7 @@
 import Foundation
 import WatchConnectivity
 import Combine
+import UIKit
 
 // Bridges ShiftStore state to the Apple Watch and handles clock commands from it.
 final class WatchSessionManager: NSObject, ObservableObject {
@@ -9,11 +10,15 @@ final class WatchSessionManager: NSObject, ObservableObject {
     @Published var isWatchReachable: Bool = false
     @Published var isWatchAppInstalled: Bool = false
     @Published var watchTestResult: String? = nil
+    @Published var isPaired: Bool = false
+    @Published var activationState: WCSessionActivationState = .notActivated
 
     private override init() {
         super.init()
         guard WCSession.isSupported() else { return }
         WCSession.default.delegate = self
+        self.isPaired = WCSession.default.isPaired
+        self.isWatchAppInstalled = WCSession.default.isWatchAppInstalled
         WCSession.default.activate()
     }
 
@@ -46,6 +51,7 @@ final class WatchSessionManager: NSObject, ObservableObject {
             return
         }
         let session = WCSession.default
+        self.isPaired = session.isPaired
 
         guard session.isPaired else {
             watchTestResult = "No Apple Watch is paired with this iPhone."
@@ -58,6 +64,7 @@ final class WatchSessionManager: NSObject, ObservableObject {
         // anyway just spams that error, so stop here and tell the user how to fix it.
         guard session.isWatchAppInstalled else {
             watchTestResult = "ShiftSync isn't installed on your Apple Watch yet.\n\nOpen the Watch app on your iPhone → My Watch → scroll to ShiftSync → tap Install.\n\nIf you're testing in Xcode/Simulator, run the \"ShiftSync Watch app Watch App\" scheme at least once so it gets installed on the paired watch."
+            _ = self.openWatchAppManagePage()
             return
         }
 
@@ -90,6 +97,15 @@ final class WatchSessionManager: NSObject, ObservableObject {
             self.watchTestResult = "Apple Watch isn't reachable right now, so the test was queued — it'll arrive once your watch reconnects."
         }
     }
+
+    /// Attempts to open the Watch app's My Watch tab to help the user install the companion app.
+    /// Returns true if the system accepted the request to open the Watch app.
+    @discardableResult
+    func openWatchAppManagePage() -> Bool {
+        guard let url = URL(string: "itms-watchs://") else { return false }
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        return true
+    }
 }
 
 extension WatchSessionManager: WCSessionDelegate {
@@ -99,6 +115,8 @@ extension WatchSessionManager: WCSessionDelegate {
         DispatchQueue.main.async {
             self.isWatchReachable = session.isReachable
             self.isWatchAppInstalled = session.isWatchAppInstalled
+            self.activationState = activationState
+            self.isPaired = session.isPaired
             self.sendStateUpdate()
         }
     }
@@ -112,6 +130,16 @@ extension WatchSessionManager: WCSessionDelegate {
         DispatchQueue.main.async {
             self.isWatchReachable = session.isReachable
             self.isWatchAppInstalled = session.isWatchAppInstalled
+            self.isPaired = session.isPaired
+        }
+    }
+    
+    func sessionWatchStateDidChange(_ session: WCSession) {
+        DispatchQueue.main.async {
+            self.isWatchReachable = session.isReachable
+            self.isWatchAppInstalled = session.isWatchAppInstalled
+            self.isPaired = session.isPaired
+            self.sendStateUpdate()
         }
     }
 

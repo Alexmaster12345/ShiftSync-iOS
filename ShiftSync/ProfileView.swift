@@ -1,4 +1,5 @@
 import SwiftUI
+import WatchConnectivity
 
 struct ProfileView: View {
     let userName: String
@@ -394,6 +395,7 @@ struct NotificationPrefsView: View {
     @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var locationManager = LocationManager.shared
     @ObservedObject private var watchSession = WatchSessionManager.shared
+    @ObservedObject private var watch = WatchSessionManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showWatchResultAlert = false
 
@@ -429,45 +431,193 @@ struct NotificationPrefsView: View {
                     .padding(.horizontal, 16).padding(.vertical, 14)
 
                     Divider().background(Color.darkBg)
+                }
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                    Button(action: { LocationManager.openSettings() }) {
+                // Apple Watch section
+                VStack(spacing: 0) {
+                    // Status row
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.shiftBlue.opacity(0.15))
+                                .frame(width: 34, height: 34)
+                            Image(systemName: "applewatch")
+                                .font(.system(size: 14))
+                                .foregroundColor(.shiftBlue)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Apple Watch")
+                                .font(.system(size: 15))
+                                .foregroundColor(.ssTextPrimary)
+                            let statusText: String = {
+                                if !watch.isPaired { return "No Apple Watch paired" }
+                                if watch.activationState != .activated { return "Connecting to Apple Watch…" }
+                                if !watch.isWatchAppInstalled { return "Not installed" }
+                                return watch.isWatchReachable ? "Installed — reachable" : "Installed — not reachable"
+                            }()
+                            let statusColor: Color = {
+                                if !watch.isPaired { return .orangeAccent }
+                                if watch.activationState != .activated { return .ssTextMuted }
+                                if !watch.isWatchAppInstalled { return .ssTextMuted }
+                                return watch.isWatchReachable ? .greenAccent : .orangeAccent
+                            }()
+                            Text(statusText)
+                                .font(.system(size: 12))
+                                .foregroundColor(statusColor)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+
+                    Divider().background(Color.darkBg)
+
+                    // Install/manage on Watch
+                    Button(action: { _ = watch.openWatchAppManagePage() }) {
                         HStack(spacing: 12) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "gear").font(.system(size: 14)).foregroundColor(.shiftBlue)
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.tealAccent.opacity(0.15))
+                                    .frame(width: 34, height: 34)
+                                Image(systemName: "square.and.arrow.down")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.tealAccent)
                             }
-                            Text("iOS Notification Settings").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text(watch.isWatchAppInstalled ? "Manage in Watch app" : "Install on Apple Watch")
+                                .font(.system(size: 15))
+                                .foregroundColor(.ssTextPrimary)
                             Spacer()
-                            Image(systemName: "arrow.up.right").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
+                            Image(systemName: "arrow.up.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.ssTextMuted)
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 14)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
                     }
 
                     Divider().background(Color.darkBg)
 
-                    Button(action: {
-                        watchSession.watchTestResult = nil
-                        watchSession.sendTestNotificationToWatch()
-                    }) {
+                    // Send test to Watch
+                    Button(action: { watch.sendTestNotificationToWatch() }) {
                         HStack(spacing: 12) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "applewatch").font(.system(size: 14)).foregroundColor(.tealAccent)
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.orangeAccent.opacity(0.15))
+                                    .frame(width: 34, height: 34)
+                                Image(systemName: "bell.badge")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.orangeAccent)
                             }
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Test Apple Watch Notification").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                                Text(watchStatusLabel)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(watchStatusColor)
-                            }
+                            Text("Send Test to Watch")
+                                .font(.system(size: 15))
+                                .foregroundColor(.ssTextPrimary)
                             Spacer()
-                            Image(systemName: "paperplane.fill").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.ssTextMuted)
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 14)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
                     }
+                    .disabled(!watch.isPaired || watch.activationState != .activated || !watch.isWatchAppInstalled)
                 }
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                if !watch.isPaired {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.orangeAccent)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("No Apple Watch paired")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.ssTextPrimary)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("1. Open the Watch app on your iPhone")
+                                Text("2. Tap \"All Watches\" → \"Add Watch\" and follow the steps")
+                            }
+                            .font(.system(size: 12))
+                            .foregroundColor(.ssTextSecondary)
+
+                            Button(action: { _ = watch.openWatchAppManagePage() }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "applewatch")
+                                        .font(.system(size: 14))
+                                    Text("Open Watch app")
+                                        .font(.system(size: 13, weight: .bold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.shiftBlue)
+                                .clipShape(Capsule())
+                            }
+                            .padding(.top, 4)
+                        }
+                        Spacer()
+                    }
+                    .padding(14)
+                    .background(Color.orangeAccent.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                if !watch.isWatchAppInstalled {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.orangeAccent)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Can't install the ShiftSync Watch app?")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.ssTextPrimary)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("1. Open the Watch app on your iPhone")
+                                Text("2. My Watch → scroll to ShiftSync → tap Install")
+                                Text("3. If using Simulator, run the \"ShiftSync Watch app Watch App\" scheme once")
+                            }
+                            .font(.system(size: 12))
+                            .foregroundColor(.ssTextSecondary)
+
+                            Button(action: { _ = watch.openWatchAppManagePage() }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.up.right.square")
+                                        .font(.system(size: 14))
+                                    Text("Open Watch app")
+                                        .font(.system(size: 13, weight: .bold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.shiftBlue)
+                                .clipShape(Capsule())
+                            }
+                            .padding(.top, 4)
+                        }
+                        Spacer()
+                    }
+                    .padding(14)
+                    .background(Color.orangeAccent.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                // Feedback from watch actions
+                if let msg = watch.watchTestResult, !msg.isEmpty {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.shiftBlue)
+                        Text(msg)
+                            .font(.system(size: 12))
+                            .foregroundColor(.ssTextSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(12)
+                    .background(Color.shiftBlue.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
 
                 Spacer().frame(height: 32)
             }
@@ -862,3 +1012,4 @@ struct SalarySettingsView: View {
 #Preview {
     NavigationStack { ProfileView(userName: "Alex", store: ShiftStore()) {} }
 }
+
