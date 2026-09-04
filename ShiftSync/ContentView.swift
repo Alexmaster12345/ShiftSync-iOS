@@ -5,18 +5,16 @@ import CoreLocation
 struct ContentView: View {
     @StateObject private var store = ShiftStore.shared
     @ObservedObject private var settings = AppSettings.shared
-    @State private var userName: String? = UserDefaults.standard.string(forKey: "ss_user_name")
+    @AppStorage("ss_user_name") private var userName: String = ""
 
     var body: some View {
         Group {
-            if let name = userName {
-                MainTabView(userName: name, store: store) {
-                    UserDefaults.standard.removeObject(forKey: "ss_user_name")
-                    userName = nil
+            if !userName.isEmpty {
+                MainTabView(userName: userName, store: store) {
+                    userName = ""
                 }
             } else {
                 LoginView { name in
-                    UserDefaults.standard.set(name, forKey: "ss_user_name")
                     userName = name
                 }
             }
@@ -292,137 +290,6 @@ struct WorkplaceTabView: View {
             RoundedRectangle(cornerRadius: 8).fill(color.opacity(0.15)).frame(width: 34, height: 34)
             Image(systemName: name).font(.system(size: 15)).foregroundColor(color)
         }
-    }
-}
-
-// MARK: - Earnings View
-struct EarningsView: View {
-    @ObservedObject var store: ShiftStore
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Spacer().frame(height: 12)
-
-                // Summary card
-                ZStack {
-                    LinearGradient(
-                        colors: [Color.shiftBlue, Color.shiftBlueDark],
-                        startPoint: .topLeading, endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("THIS WEEK")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.75))
-                            .kerning(1)
-                        Text(formatCurrency(store.weeklyEarnings))
-                            .font(.system(size: 40, weight: .black))
-                            .foregroundColor(.white)
-                        HStack(spacing: 16) {
-                            earningsStat(label: "Hours", value: formatDuration(store.weeklyMinutes))
-                            earningsStat(label: "Shifts", value: "\(weeklyShiftCount)")
-                            earningsStat(label: "Rate", value: "$24.00/hr")
-                        }
-                    }
-                    .padding(20)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                // All-time totals
-                VStack(spacing: 0) {
-                    sectionHeader("ALL TIME")
-                    HStack(spacing: 0) {
-                        totalStatCell(value: "\(store.entries.count)", label: "Shifts")
-                        Divider().background(Color.darkBg).frame(height: 40)
-                        totalStatCell(value: formatDuration(store.entries.reduce(0) { $0 + $1.durationMinutes }), label: "Hours")
-                        Divider().background(Color.darkBg).frame(height: 40)
-                        totalStatCell(value: formatCurrency(store.entries.reduce(0) { $0 + $1.estimatedPay }), label: "Earned")
-                    }
-                    .padding(.vertical, 16)
-                }
-                .background(Color.darkCard)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-
-                // Recent shifts
-                if !store.entries.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        sectionHeader("RECENT SHIFTS")
-                        ForEach(store.entries.sorted { $0.startedAt > $1.startedAt }.prefix(10)) { entry in
-                            WorkedShiftRow(entry: entry)
-                        }
-                    }
-                }
-
-                Spacer().frame(height: 32)
-            }
-            .padding(.horizontal, 16)
-        }
-        .background(Color.darkBg.ignoresSafeArea())
-        .navigationTitle("Earnings")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-    }
-
-    private var weeklyShiftCount: Int {
-        let cal = Calendar.current
-        guard let start = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())),
-              let end = cal.date(byAdding: .day, value: 7, to: start) else { return 0 }
-        return store.entries.filter { $0.startedAt >= start && $0.startedAt < end }.count
-    }
-
-    private func earningsStat(label: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.system(size: 11)).foregroundColor(.white.opacity(0.7))
-            Text(value).font(.system(size: 15, weight: .bold)).foregroundColor(.white)
-        }
-    }
-
-    private func totalStatCell(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Text(value).font(.system(size: 17, weight: .bold)).foregroundColor(.ssTextPrimary)
-                .lineLimit(1).minimumScaleFactor(0.7)
-            Text(label).font(.system(size: 11)).foregroundColor(.ssTextSecondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func sectionHeader(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundColor(.ssTextSecondary)
-            .kerning(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.bottom, 4)
-    }
-}
-
-// MARK: - Placeholder
-struct PlaceholderView: View {
-    let icon: String
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 48))
-                .foregroundColor(.shiftBlue)
-            Text(title)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.ssTextPrimary)
-            Text(subtitle)
-                .font(.system(size: 15))
-                .foregroundColor(.ssTextSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.darkBg.ignoresSafeArea())
-        .navigationTitle(title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }
 

@@ -81,6 +81,15 @@ Optimized for all iPhone sizes:
 - CoreLocation (geofencing)
 - UserDefaults (persistence)
 
+## Privacy
+
+ShiftSync collects no data and has no backend — everything is stored locally on-device via `UserDefaults`, which is included in standard iOS backups (iCloud or Finder/computer). See [PRIVACY_POLICY.md](PRIVACY_POLICY.md) for the full policy and [APP_STORE_SUBMISSION.md](APP_STORE_SUBMISSION.md) for submission checklist details.
+
+## Roadmap
+
+- Manual Export/Restore (JSON) so users switching devices without a full backup/restore don't lose data
+- Email sign-in (currently disabled — placeholder shown on the login screen)
+
 ## License
 
 MIT

@@ -104,7 +104,7 @@ struct CalendarView: View {
                         .foregroundColor(.ssTextPrimary)
                     Spacer()
                     if !monthShifts.isEmpty {
-                        Text("\(monthShifts.count) SHIFTS • \(totalMonthHoursLabel)")
+                        Text("\(monthShifts.count) SHIFT\(monthShifts.count == 1 ? "" : "S") • \(totalMonthHoursLabel)")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.ssTextSecondary)
                     }
@@ -189,7 +189,7 @@ struct CalendarView: View {
                     .frame(width: 32, height: 32)
             }
             Spacer()
-            Text("\(Self.monthNames[displayMonth]) \(displayYear)")
+            Text("\(Self.monthNames[displayMonth]) \(String(displayYear))")
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(.ssTextPrimary)
             Spacer()
@@ -250,12 +250,14 @@ struct CalendarView: View {
 
     private func prevMonth() {
         if displayMonth == 0 { displayMonth = 11; displayYear -= 1 } else { displayMonth -= 1 }
-        selectedDay = 1
+        // 0 matches no day in the grid, so switching months doesn't leave a stale
+        // "selected" highlight on day 1 that looks like a false "today" indicator.
+        selectedDay = 0
     }
 
     private func nextMonth() {
         if displayMonth == 11 { displayMonth = 0; displayYear += 1 } else { displayMonth += 1 }
-        selectedDay = 1
+        selectedDay = 0
     }
 }
 

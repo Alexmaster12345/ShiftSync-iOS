@@ -127,7 +127,7 @@ struct ManualEntryView: View {
                     if displayMonth == 0 { displayMonth = 11; displayYear -= 1 } else { displayMonth -= 1 }
                 }) { Image(systemName: "chevron.left").foregroundColor(.shiftBlue) }
                 Spacer()
-                Text("\(Self.monthNames[displayMonth]) \(displayYear)")
+                Text("\(Self.monthNames[displayMonth]) \(String(displayYear))")
                     .font(.system(size: 15, weight: .bold)).foregroundColor(.ssTextPrimary)
                 Spacer()
                 Button(action: {
@@ -426,13 +426,13 @@ struct EditShiftView: View {
         _endTime      = State(initialValue: entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60))
         _breakMinutes = State(initialValue: entry.unpaidBreakMinutes)
         _shiftType    = State(initialValue: entry.shiftType)
-        _vacationDays = State(initialValue: max(1, entry.durationMinutes / 480))
+        _vacationDays = State(initialValue: max(1, entry.durationMinutes / Int(AppSettings.shared.workDayHours * 60)))
     }
 
     private var isDayType: Bool { shiftType.isDayType }
 
     private var durationMinutes: Int {
-        if isDayType { return vacationDays * 480 }
+        if isDayType { return vacationDays * Int(AppSettings.shared.workDayHours * 60) }
         let diff = endTime.timeIntervalSince(startTime)
         return diff > 0 ? Int(diff / 60) : 0
     }
