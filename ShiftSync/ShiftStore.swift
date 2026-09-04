@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UserNotifications
 
 // MARK: - Models
 enum ShiftType: String, Codable, CaseIterable {
@@ -106,6 +107,7 @@ class ShiftStore: ObservableObject {
         WatchSessionManager.shared.sendStateUpdate()
         // Cancel "didn't make it to work?" alert — user is clearly working today
         LocationManager.shared.cancelDailyAbsenceCheck()
+        fireClockNotification(title: "Clocked In ✓", body: "Your shift has started.")
     }
 
     func clockOut() {
@@ -127,6 +129,7 @@ class ShiftStore: ObservableObject {
                 UserDefaults.standard.removeObject(forKey: activeKey)
                 WatchSessionManager.shared.sendStateUpdate()
                 LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
+                fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
                 return
             }
         }
@@ -139,6 +142,25 @@ class ShiftStore: ObservableObject {
         UserDefaults.standard.removeObject(forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
         LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
+        fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
+    }
+
+    // MARK: Notifications
+
+    /// Fires a local notification confirming the clock in/out action. iOS mirrors this
+    /// to a paired Apple Watch automatically — no Watch app installation required.
+    private func fireClockNotification(title: String, body: String) {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, _ in
+            guard granted else { return }
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body  = body
+            content.sound = .default
+            UNUserNotificationCenter.current().add(
+                UNNotificationRequest(identifier: "ss_clock_\(Int(Date().timeIntervalSince1970))",
+                                      content: content, trigger: nil)
+            )
+        }
     }
 
     func deleteEntry(id: UUID) {
