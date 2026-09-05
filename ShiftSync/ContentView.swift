@@ -33,8 +33,8 @@ struct ContentView: View {
             // animate. This SwiftUI overlay takes over the instant our code runs, plays
             // a brief entrance animation, then fades to reveal the real content beneath —
             // the standard way apps achieve an "animated splash" on iOS.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                withAnimation(.easeOut(duration: 0.35)) { showSplash = false }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation(.easeOut(duration: 0.4)) { showSplash = false }
             }
         }
     }
