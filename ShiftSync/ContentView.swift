@@ -6,20 +6,71 @@ struct ContentView: View {
     @StateObject private var store = ShiftStore.shared
     @ObservedObject private var settings = AppSettings.shared
     @AppStorage("ss_user_name") private var userName: String = ""
+    @State private var showSplash = true
 
     var body: some View {
-        Group {
-            if !userName.isEmpty {
-                MainTabView(userName: userName, store: store) {
-                    userName = ""
+        ZStack {
+            Group {
+                if !userName.isEmpty {
+                    MainTabView(userName: userName, store: store) {
+                        userName = ""
+                    }
+                } else {
+                    LoginView { name in
+                        userName = name
+                    }
                 }
-            } else {
-                LoginView { name in
-                    userName = name
-                }
+            }
+
+            if showSplash {
+                SplashView()
+                    .transition(.opacity)
             }
         }
         .preferredColorScheme(settings.appTheme.colorScheme)
+        .onAppear {
+            // The native LaunchScreen.storyboard is a static system snapshot and can't
+            // animate. This SwiftUI overlay takes over the instant our code runs, plays
+            // a brief entrance animation, then fades to reveal the real content beneath —
+            // the standard way apps achieve an "animated splash" on iOS.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) {
+                withAnimation(.easeOut(duration: 0.4)) { showSplash = false }
+            }
+        }
+    }
+}
+
+// MARK: - Splash
+
+private struct SplashView: View {
+    @State private var scale: CGFloat = 0.6
+    @State private var opacity: Double = 0
+    @State private var pulse = false
+
+    var body: some View {
+        ZStack {
+            // Fixed (non-adaptive) navy matching LaunchScreen.storyboard's background —
+            // Color.darkBg is theme-adaptive and would render light gray in Light mode,
+            // breaking the seamless handoff from the native launch screen.
+            Color(red: 0.0392, green: 0.0706, blue: 0.1686).ignoresSafeArea()
+
+            Circle()
+                .fill(LinearGradient(colors: [.shiftBlue, .shiftBlueDark],
+                                     startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: 120, height: 120)
+                .shadow(color: Color.shiftBlue.opacity(0.4), radius: 20, y: 10)
+                .scaleEffect(scale * (pulse ? 1.06 : 1.0))
+                .opacity(opacity)
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.65)) {
+                scale = 1.0
+                opacity = 1.0
+            }
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true).delay(0.55)) {
+                pulse = true
+            }
+        }
     }
 }
 
