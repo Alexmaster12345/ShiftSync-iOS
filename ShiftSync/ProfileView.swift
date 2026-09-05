@@ -370,6 +370,8 @@ struct SecurityPrivacyView: View {
                                 Text("Export Backup (JSON)").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
                                 Text("Save your shift records to transfer to a new device")
                                     .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                                    .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             Spacer()
                             Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
@@ -389,6 +391,8 @@ struct SecurityPrivacyView: View {
                                 Text("Import Backup").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
                                 Text("Restore shift records from a previously exported file")
                                     .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                                    .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             Spacer()
                             Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
