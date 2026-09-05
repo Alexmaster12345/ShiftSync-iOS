@@ -62,6 +62,8 @@ class AppSettings: ObservableObject {
     @Published var workplaceLatitude: Double = 0       { didSet { persist() } }
     @Published var workplaceLongitude: Double = 0      { didSet { persist() } }
     @Published var locationAlertsEnabled: Bool = false { didSet { persist() } }
+    // Calendar weekday numbers: 1 = Sunday ... 7 = Saturday. Defaults to Mon–Fri.
+    @Published var workDays: Set<Int> = [2, 3, 4, 5, 6] { didSet { persist() } }
 
     // Personal info
     @Published var email: String = ""      { didSet { persist() } }
@@ -99,6 +101,7 @@ class AppSettings: ObservableObject {
         var dailyOvertimeHours: Double?
         var weeklyOvertimeHours: Double?
         var overtimeMultiplier: Double?
+        var workDays: [Int]?
     }
 
     init() {
@@ -122,6 +125,7 @@ class AppSettings: ObservableObject {
         dailyOvertimeHours    = s.dailyOvertimeHours   ?? 8.0
         weeklyOvertimeHours   = s.weeklyOvertimeHours  ?? 40.0
         overtimeMultiplier    = s.overtimeMultiplier   ?? 1.5
+        workDays              = Set(s.workDays ?? [2, 3, 4, 5, 6])
     }
 
     private func persist() {
@@ -139,7 +143,8 @@ class AppSettings: ObservableObject {
             overtimeEnabled: overtimeEnabled,
             dailyOvertimeHours: dailyOvertimeHours,
             weeklyOvertimeHours: weeklyOvertimeHours,
-            overtimeMultiplier: overtimeMultiplier
+            overtimeMultiplier: overtimeMultiplier,
+            workDays: Array(workDays)
         )
         UserDefaults.standard.set(try? JSONEncoder().encode(s), forKey: key)
     }
@@ -150,4 +155,14 @@ class AppSettings: ObservableObject {
     var dailyRate: Double { effectiveHourlyRate * workDayHours }
     var rateLabel: String { paymentType == .hourly ? "Hourly Rate" : "Monthly Salary" }
     var hasWorkplaceCoordinates: Bool { workplaceLatitude != 0 || workplaceLongitude != 0 }
+
+    // Calendar weekday order: index 0 = weekday 1 (Sunday) ... index 6 = weekday 7 (Saturday)
+    static let weekdaySymbolsShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+    var workDaysLabel: String {
+        if workDays.isEmpty { return "No days selected" }
+        if workDays.count == 7 { return "Every day" }
+        if workDays == [2, 3, 4, 5, 6] { return "Weekdays (Mon–Fri)" }
+        return workDays.sorted().map { Self.weekdaySymbolsShort[$0 - 1] }.joined(separator: ", ")
+    }
 }

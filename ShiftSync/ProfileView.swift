@@ -625,8 +625,10 @@ struct NotificationPrefsView: View {
                                 if enabled {
                                     locationManager.requestPermissions()
                                     if settings.hasWorkplaceCoordinates { locationManager.restoreMonitoring() }
+                                    locationManager.scheduleDailyAbsenceCheck()
                                 } else {
                                     locationManager.stopMonitoring()
+                                    locationManager.cancelDailyAbsenceCheck()
                                 }
                             }
                     }
@@ -637,12 +639,61 @@ struct NotificationPrefsView: View {
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
+                // Work Days
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
+                            Image(systemName: "calendar.badge.checkmark").font(.system(size: 14)).foregroundColor(.tealAccent)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Work Days").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text(settings.workDaysLabel).font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+
+                    HStack(spacing: 8) {
+                        ForEach(1...7, id: \.self) { weekday in
+                            dayChip(weekday: weekday)
+                        }
+                    }
+                    .padding(.horizontal, 16).padding(.bottom, 14)
+
+                    Text("\"Didn't make it to work today?\" reminders only fire on the days you select here.")
+                        .font(.system(size: 11))
+                        .foregroundColor(.ssTextMuted)
+                        .padding(.horizontal, 16).padding(.bottom, 14)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
                 Spacer().frame(height: 32)
             }
             .padding(.horizontal, 16)
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+    }
+
+    private func dayChip(weekday: Int) -> some View {
+        let isOn = settings.workDays.contains(weekday)
+        return Button(action: {
+            if isOn { settings.workDays.remove(weekday) } else { settings.workDays.insert(weekday) }
+            locationManager.scheduleDailyAbsenceCheck()
+        }) {
+            Text(AppSettings.weekdaySymbolsShort[weekday - 1].prefix(1))
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(isOn ? .white : .ssTextMuted)
+                .frame(width: 34, height: 34)
+                .background(isOn ? Color.tealAccent : Color.darkBg)
+                .clipShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(AppSettings.weekdaySymbolsShort[weekday - 1])
+        .accessibilityAddTraits(isOn ? [.isSelected] : [])
     }
 }
 
