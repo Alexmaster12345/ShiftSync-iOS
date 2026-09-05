@@ -46,6 +46,8 @@ private struct SplashView: View {
     @State private var scale: CGFloat = 0.6
     @State private var opacity: Double = 0
     @State private var pulse = false
+    @State private var minuteHandSpin = false
+    @State private var hourHandSpin = false
 
     var body: some View {
         ZStack {
@@ -54,13 +56,43 @@ private struct SplashView: View {
             // breaking the seamless handoff from the native launch screen.
             Color(red: 0.0392, green: 0.0706, blue: 0.1686).ignoresSafeArea()
 
-            Circle()
-                .fill(LinearGradient(colors: [.shiftBlue, .shiftBlueDark],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                .frame(width: 120, height: 120)
-                .shadow(color: Color.shiftBlue.opacity(0.4), radius: 20, y: 10)
-                .scaleEffect(scale * (pulse ? 1.06 : 1.0))
-                .opacity(opacity)
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.shiftBlue, .shiftBlueDark],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 120, height: 120)
+                    .shadow(color: Color.shiftBlue.opacity(0.4), radius: 20, y: 10)
+
+                // Tick marks
+                ForEach(0..<12, id: \.self) { i in
+                    Capsule()
+                        .fill(Color.white.opacity(0.55))
+                        .frame(width: 2, height: 6)
+                        .offset(y: -42)
+                        .rotationEffect(.degrees(Double(i) * 30))
+                }
+
+                // Hour hand
+                Capsule()
+                    .fill(Color.white.opacity(0.9))
+                    .frame(width: 4, height: 20)
+                    .offset(y: -10)
+                    .rotationEffect(.degrees(hourHandSpin ? 360 : 0))
+
+                // Minute hand
+                Capsule()
+                    .fill(Color.white)
+                    .frame(width: 3, height: 32)
+                    .offset(y: -16)
+                    .rotationEffect(.degrees(minuteHandSpin ? 360 : 0))
+
+                Circle()
+                    .fill(Color.shiftBlue)
+                    .frame(width: 10, height: 10)
+                    .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+            }
+            .scaleEffect(scale * (pulse ? 1.06 : 1.0))
+            .opacity(opacity)
         }
         .onAppear {
             withAnimation(.spring(response: 0.55, dampingFraction: 0.65)) {
@@ -69,6 +101,12 @@ private struct SplashView: View {
             }
             withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true).delay(0.55)) {
                 pulse = true
+            }
+            withAnimation(.linear(duration: 3.0).repeatForever(autoreverses: false)) {
+                minuteHandSpin = true
+            }
+            withAnimation(.linear(duration: 24.0).repeatForever(autoreverses: false)) {
+                hourHandSpin = true
             }
         }
     }
