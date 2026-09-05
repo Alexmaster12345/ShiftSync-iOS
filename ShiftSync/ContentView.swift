@@ -51,10 +51,8 @@ private struct SplashView: View {
 
     var body: some View {
         ZStack {
-            // Fixed (non-adaptive) navy matching LaunchScreen.storyboard's background —
-            // Color.darkBg is theme-adaptive and would render light gray in Light mode,
-            // breaking the seamless handoff from the native launch screen.
-            Color(red: 0.0392, green: 0.0706, blue: 0.1686).ignoresSafeArea()
+            // Fixed white background matching LaunchScreen.storyboard's background.
+            Color.white.ignoresSafeArea()
 
             ZStack {
                 Circle()
