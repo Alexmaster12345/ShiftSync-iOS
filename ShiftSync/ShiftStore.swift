@@ -134,7 +134,9 @@ class ShiftStore: ObservableObject {
         activeShiftStart = now
         UserDefaults.standard.set(now.timeIntervalSince1970, forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
-        // Cancel "didn't make it to work?" alert — user is clearly working today
+        // Mark today as worked and cancel "didn't make it to work?" alerts — a manual
+        // clock-in is just as valid a signal as a geofence arrival that they're at work.
+        LocationManager.shared.markWorkedToday()
         LocationManager.shared.cancelDailyAbsenceCheck()
         fireClockNotification(title: "Clocked In ✓", body: "Your shift has started.")
     }
@@ -157,6 +159,7 @@ class ShiftStore: ObservableObject {
                 activeShiftStart = nil
                 UserDefaults.standard.removeObject(forKey: activeKey)
                 WatchSessionManager.shared.sendStateUpdate()
+                LocationManager.shared.markWorkedToday()
                 LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
                 fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
                 return
@@ -170,6 +173,7 @@ class ShiftStore: ObservableObject {
         activeShiftStart = nil
         UserDefaults.standard.removeObject(forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
+        LocationManager.shared.markWorkedToday()
         LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
         fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
     }

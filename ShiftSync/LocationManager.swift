@@ -130,6 +130,13 @@ class LocationManager: NSObject, ObservableObject {
             }
     }
 
+    /// Marks "today" as already worked, so the missed-day reminder won't fire or prompt.
+    /// Called for both geofence-detected arrivals and manual clock in/out — a manual
+    /// clock action is just as valid a signal that the user worked today.
+    func markWorkedToday() {
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastArrivalKey)
+    }
+
     /// Simulates arriving — fires the real arrival notification with the Clock In button.
     func simulateArrival() {
         AlertLog.shared.addArrival()
@@ -241,7 +248,7 @@ class LocationManager: NSObject, ObservableObject {
         if lastArrival > 0, Date().timeIntervalSince1970 - lastArrival < 1800 { return }
 
         AlertLog.shared.addArrival()
-        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastArrivalKey)
+        markWorkedToday()
         cancelDailyAbsenceCheck()
         deliver(
             title: "You've arrived at work!",
