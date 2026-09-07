@@ -19,6 +19,7 @@ class LocationManager: NSObject, ObservableObject {
     private let actionClockOut   = "SS_CLOCK_OUT"
     private let missedDayID      = "ss_daily_missed"
     private let lastArrivalKey   = "ss_last_arrival_ts"
+    private let lastDepartureKey = "ss_last_departure_ts"
 
     enum PendingClockAction { case clockIn, clockOut, logDayOff }
 
@@ -258,6 +259,25 @@ class LocationManager: NSObject, ObservableObject {
         )
     }
 
+    /// Fires the departure prompt + notification, guarding against duplicates the same
+    /// way handleArrival() does — GPS jitter right at the geofence boundary can cause
+    /// didExitRegion to fire more than once for the same real-world exit.
+    private func handleDeparture() {
+        let lastDeparture = UserDefaults.standard.double(forKey: lastDepartureKey)
+        if lastDeparture > 0, Date().timeIntervalSince1970 - lastDeparture < 1800 { return }
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastDepartureKey)
+
+        AlertLog.shared.addDeparture()
+        // Re-enable the daily absence check for future days
+        scheduleDailyAbsenceCheck()
+        deliver(
+            title: "You've left work!",
+            body: "Tap to clock out, or use the Clock Out button.",
+            id: "depart_\(Int(Date().timeIntervalSince1970))",
+            category: categoryDepart
+        )
+    }
+
     private func deliver(title: String, body: String, id: String,
                          category: String? = nil, delaySeconds: TimeInterval = 0) {
         let content            = UNMutableNotificationContent()
@@ -311,15 +331,7 @@ extension LocationManager: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         guard region.identifier == regionID else { return }
-        AlertLog.shared.addDeparture()
-        // Re-enable the daily absence check for future days
-        scheduleDailyAbsenceCheck()
-        deliver(
-            title: "You've left work!",
-            body: "Tap to clock out, or use the Clock Out button.",
-            id: "depart_\(Int(Date().timeIntervalSince1970))",
-            category: categoryDepart
-        )
+        handleDeparture()
     }
 
     func locationManager(_ manager: CLLocationManager,
