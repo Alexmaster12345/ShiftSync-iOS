@@ -308,6 +308,43 @@ struct WorkplaceTabView: View {
                             }
                     }
                     .padding(.horizontal, 16).padding(.vertical, 12)
+
+                    Divider().background(Color.darkBg)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 12) {
+                            settingIcon("dot.radiowaves.up.forward", color: .tealAccent)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Detection Radius")
+                                    .font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                Text("How close you need to be for alerts to fire")
+                                    .font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                            }
+                            Spacer()
+                        }
+                        HStack(spacing: 8) {
+                            ForEach([30.0, 75.0, 150.0, 300.0], id: \.self) { radius in
+                                Button(action: {
+                                    settings.geofenceRadius = radius
+                                    if locationManager.isMonitoring { locationManager.restoreMonitoring() }
+                                }) {
+                                    Text(radius >= 1000 ? "\(Int(radius/1000))km" : "\(Int(radius))m")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(settings.geofenceRadius == radius ? .white : .ssTextSecondary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 8)
+                                        .background(settings.geofenceRadius == radius ? Color.tealAccent : Color.darkBg)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        Text("Smaller radii are more precise but less reliable — GPS accuracy makes anything under ~30m unlikely to trigger consistently.")
+                            .font(.system(size: 10))
+                            .foregroundColor(.ssTextMuted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 12)
                 }
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 18))

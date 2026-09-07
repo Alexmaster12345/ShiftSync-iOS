@@ -64,6 +64,9 @@ class AppSettings: ObservableObject {
     @Published var locationAlertsEnabled: Bool = false { didSet { persist() } }
     // Calendar weekday numbers: 1 = Sunday ... 7 = Saturday. Defaults to Mon–Fri.
     @Published var workDays: Set<Int> = [2, 3, 4, 5, 6] { didSet { persist() } }
+    // Geofence radius in meters. Below ~30m, GPS accuracy makes region monitoring
+    // unreliable — Apple recommends 100m+, but 75 is the pre-existing default here.
+    @Published var geofenceRadius: Double = 75 { didSet { persist() } }
 
     // Personal info
     @Published var email: String = ""      { didSet { persist() } }
@@ -102,6 +105,7 @@ class AppSettings: ObservableObject {
         var weeklyOvertimeHours: Double?
         var overtimeMultiplier: Double?
         var workDays: [Int]?
+        var geofenceRadius: Double?
     }
 
     init() {
@@ -126,6 +130,7 @@ class AppSettings: ObservableObject {
         weeklyOvertimeHours   = s.weeklyOvertimeHours  ?? 40.0
         overtimeMultiplier    = s.overtimeMultiplier   ?? 1.5
         workDays              = Set(s.workDays ?? [2, 3, 4, 5, 6])
+        geofenceRadius        = s.geofenceRadius ?? 75
     }
 
     private func persist() {
@@ -144,7 +149,8 @@ class AppSettings: ObservableObject {
             dailyOvertimeHours: dailyOvertimeHours,
             weeklyOvertimeHours: weeklyOvertimeHours,
             overtimeMultiplier: overtimeMultiplier,
-            workDays: Array(workDays)
+            workDays: Array(workDays),
+            geofenceRadius: geofenceRadius
         )
         UserDefaults.standard.set(try? JSONEncoder().encode(s), forKey: key)
     }

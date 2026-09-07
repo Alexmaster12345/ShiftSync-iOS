@@ -225,7 +225,7 @@ class LocationManager: NSObject, ObservableObject {
             .filter { $0.identifier == regionID }
             .forEach { clManager.stopMonitoring(for: $0) }
 
-        let region = CLCircularRegion(center: center, radius: 75, identifier: regionID)
+        let region = CLCircularRegion(center: center, radius: AppSettings.shared.geofenceRadius, identifier: regionID)
         region.notifyOnEntry = true
         region.notifyOnExit  = true
         clManager.startMonitoring(for: region)
