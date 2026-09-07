@@ -1010,6 +1010,11 @@ struct SalarySettingsView: View {
                                     .onChange(of: settings.paymentType) { rateText = rateString }
                                     .onSubmit { applyRate() }
                                     .onChange(of: rateFocused) { if !rateFocused { applyRate() } }
+                                    // The decimal pad has no Return key, so onSubmit never fires, and
+                                    // dismissing via Back/swipe doesn't always resign focus in time for
+                                    // onChange(of: rateFocused) to run — commit on every valid keystroke
+                                    // instead of relying solely on losing focus.
+                                    .onChange(of: rateText) { applyRate() }
                             }
                         }
                         .padding(.horizontal, 16).padding(.vertical, 12)
