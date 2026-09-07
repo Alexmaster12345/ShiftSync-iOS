@@ -604,6 +604,7 @@ struct NotificationPrefsView: View {
     @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var locationManager = LocationManager.shared
     @Environment(\.dismiss) private var dismiss
+    @State private var saved = false
 
     var body: some View {
         ScrollView {
@@ -673,6 +674,18 @@ struct NotificationPrefsView: View {
                 }
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                Button(action: {
+                    withAnimation { saved = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { saved = false }
+                }) {
+                    Text(saved ? "Saved!" : "Save Changes")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity).frame(height: 50)
+                        .background(saved ? Color.greenAccent : Color.shiftBlue)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
 
                 Spacer().frame(height: 32)
             }
@@ -784,6 +797,7 @@ struct AppearanceView: View {
 struct OvertimeRulesView: View {
     @ObservedObject private var settings = AppSettings.shared
     @Environment(\.dismiss) private var dismiss
+    @State private var saved = false
 
     private let multiplierOptions: [Double] = [1.25, 1.5, 2.0]
 
@@ -879,6 +893,18 @@ struct OvertimeRulesView: View {
                     .padding(14)
                     .background(Color.shiftBlue.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                Button(action: {
+                    withAnimation { saved = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { saved = false }
+                }) {
+                    Text(saved ? "Saved!" : "Save Changes")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity).frame(height: 50)
+                        .background(saved ? Color.greenAccent : Color.orangeAccent)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
 
                 Spacer().frame(height: 32)
