@@ -204,7 +204,7 @@ struct ExportView: View {
                 .font(.system(size: 12)).foregroundColor(.ssTextPrimary)
             Spacer()
             if entry.shiftType.isDayType {
-                Text("1 day").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                Text("\(entry.dayCount) day\(entry.dayCount == 1 ? "" : "s")").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
             } else {
                 Text("\(timeFmt.string(from: entry.startedAt))–\(timeFmt.string(from: endDate))")
                     .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
@@ -228,7 +228,7 @@ struct ExportView: View {
             let hours   = String(format: "%.2f", Double(e.durationMinutes) / 60.0)
             let pay     = String(format: "%.2f", e.estimatedPay)
             if e.shiftType.isDayType {
-                csv += "\(dateFmt.string(from: e.startedAt)),\(e.shiftType.label),,,1.0,\(pay)\n"
+                csv += "\(dateFmt.string(from: e.startedAt)),\(e.shiftType.label),,,\(String(format: "%.1f", Double(e.dayCount))),\(pay)\n"
             } else {
                 csv += "\(dateFmt.string(from: e.startedAt)),\(e.shiftType.label),\(timeFmt.string(from: e.startedAt)),\(timeFmt.string(from: endDate)),\(hours),\(pay)\n"
             }
@@ -340,7 +340,7 @@ struct ExportView: View {
                     entry.shiftType.label,
                     entry.shiftType.isDayType ? "—" : timeFmt.string(from: entry.startedAt),
                     entry.shiftType.isDayType ? "—" : timeFmt.string(from: endDate),
-                    entry.shiftType.isDayType ? "1 day" : String(format: "%.1fh", Double(entry.durationMinutes) / 60.0),
+                    entry.shiftType.isDayType ? "\(entry.dayCount) day\(entry.dayCount == 1 ? "" : "s")" : String(format: "%.1fh", Double(entry.durationMinutes) / 60.0),
                     "\(settings.currency.symbol)\(String(format: "%.2f", entry.estimatedPay))"
                 ]
                 x = margin

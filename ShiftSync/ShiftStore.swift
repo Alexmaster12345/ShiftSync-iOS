@@ -54,13 +54,20 @@ struct ShiftEntry: Codable, Identifiable {
         self.unpaidBreakMinutes = unpaidBreakMinutes
     }
 
+    // Number of days a day-type entry (vacation/sick/etc.) represents. Normally 1, since
+    // shifts are created one entry per day, but EditShiftView can bundle multiple days'
+    // worth of duration into a single entry via its day-count stepper.
+    var dayCount: Int {
+        guard shiftType.isDayType else { return 0 }
+        let minsPerDay = AppSettings.shared.workDayHours * 60
+        return max(1, Int(round(Double(durationMinutes) / minsPerDay)))
+    }
+
     // Always computed from current settings so rate changes apply instantly
     var estimatedPay: Double {
         let settings = AppSettings.shared
         if shiftType.isDayType {
-            let minsPerDay = settings.workDayHours * 60
-            let days = max(1, Int(round(Double(durationMinutes) / minsPerDay)))
-            return Double(days) * settings.dailyRate * shiftType.multiplier
+            return Double(dayCount) * settings.dailyRate * shiftType.multiplier
         }
         let workMins = max(0, durationMinutes - unpaidBreakMinutes)
         return (Double(workMins) / 60.0) * settings.effectiveHourlyRate * shiftType.multiplier
@@ -111,6 +118,12 @@ class ShiftStore: ObservableObject {
     /// a full system backup.
     func exportBackupData() -> Data? {
         try? JSONEncoder().encode(Backup(entries: entries, activeShiftStart: activeShiftStart))
+    }
+
+    /// Decodes a backup file just enough to report its shift count, without applying it —
+    /// lets the UI confirm before overwriting current data.
+    func peekBackupEntryCount(_ data: Data) -> Int? {
+        try? JSONDecoder().decode(Backup.self, from: data).entries.count
     }
 
     @discardableResult
@@ -264,6 +277,6 @@ class ShiftStore: ObservableObject {
               let endOfYear   = cal.date(byAdding: .year, value: 1, to: startOfYear) else { return 0 }
         return entries
             .filter { $0.shiftType == .vacation && $0.startedAt >= startOfYear && $0.startedAt < endOfYear }
-            .reduce(0) { $0 + max(1, Int(round(Double($1.durationMinutes) / (AppSettings.shared.workDayHours * 60)))) }
+            .reduce(0) { $0 + $1.dayCount }
     }
 }

@@ -339,6 +339,9 @@ struct SecurityPrivacyView: View {
     @State private var importAlertTitle = ""
     @State private var importAlertMessage = ""
     @State private var showImportAlert = false
+    @State private var pendingImportData: Data? = nil
+    @State private var pendingImportCount = 0
+    @State private var showImportConfirm = false
 
     var body: some View {
         ScrollView {
@@ -450,18 +453,36 @@ struct SecurityPrivacyView: View {
             case .success(let url):
                 let accessed = url.startAccessingSecurityScopedResource()
                 defer { if accessed { url.stopAccessingSecurityScopedResource() } }
-                if let data = try? Data(contentsOf: url), store.importBackupData(data) {
+                if let data = try? Data(contentsOf: url), let count = store.peekBackupEntryCount(data) {
+                    pendingImportData  = data
+                    pendingImportCount = count
+                    showImportConfirm  = true
+                } else {
+                    importAlertTitle   = "Import Failed"
+                    importAlertMessage = "That file doesn't look like a valid ShiftSync backup."
+                    showImportAlert    = true
+                }
+            case .failure:
+                importAlertTitle   = "Import Failed"
+                importAlertMessage = "Couldn't read that file."
+                showImportAlert    = true
+            }
+        }
+        .confirmationDialog("Replace All Data?", isPresented: $showImportConfirm, titleVisibility: .visible) {
+            Button("Import & Replace", role: .destructive) {
+                if let data = pendingImportData, store.importBackupData(data) {
                     importAlertTitle   = "Backup Restored"
                     importAlertMessage = "Your shift records have been restored from the backup file."
                 } else {
                     importAlertTitle   = "Import Failed"
                     importAlertMessage = "That file doesn't look like a valid ShiftSync backup."
                 }
-            case .failure:
-                importAlertTitle   = "Import Failed"
-                importAlertMessage = "Couldn't read that file."
+                pendingImportData = nil
+                showImportAlert = true
             }
-            showImportAlert = true
+            Button("Cancel", role: .cancel) { pendingImportData = nil }
+        } message: {
+            Text("This backup contains \(pendingImportCount) shift record\(pendingImportCount == 1 ? "" : "s"). Importing it will permanently replace all \(store.entries.count) shift\(store.entries.count == 1 ? "" : "s") currently on this device. This cannot be undone.")
         }
         .alert(importAlertTitle, isPresented: $showImportAlert) {
             Button("OK", role: .cancel) {}

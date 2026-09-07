@@ -317,6 +317,10 @@ struct HomeView: View {
         }
     }
 
+    private var exceedsWeeklyThreshold: Bool {
+        settings.overtimeEnabled && store.weeklyMinutes > Int(settings.weeklyOvertimeHours * 60)
+    }
+
     private var weekStatCard: some View {
         let cmp = weekComparison
         return VStack(alignment: .leading, spacing: 6) {
@@ -341,6 +345,16 @@ struct HomeView: View {
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(cmp.isPositive ? .greenAccent : .redAccent)
                 .lineLimit(1)
+            if exceedsWeeklyThreshold {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 9))
+                    Text("Over \(Int(settings.weeklyOvertimeHours))h/week limit")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundColor(.orangeAccent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
