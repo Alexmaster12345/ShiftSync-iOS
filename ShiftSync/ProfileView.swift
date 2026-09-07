@@ -930,6 +930,7 @@ struct SalarySettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var rateText: String = ""
     @FocusState private var rateFocused: Bool
+    @State private var saved = false
 
     var body: some View {
         ScrollView {
@@ -1054,6 +1055,15 @@ struct SalarySettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
 
+                Button(action: saveChanges) {
+                    Text(saved ? "Saved!" : "Save Changes")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity).frame(height: 50)
+                        .background(saved ? Color.greenAccent : Color.shiftBlue)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+
                 Spacer().frame(height: 32)
             }
             .padding(.horizontal, 16)
@@ -1070,6 +1080,15 @@ struct SalarySettingsView: View {
     private func applyRate() {
         guard let v = Double(rateText.replacingOccurrences(of: ",", with: ".")), v > 0 else { return }
         if settings.paymentType == .hourly { settings.hourlyRate = v } else { settings.monthlySalary = v }
+    }
+
+    private func saveChanges() {
+        // Currency, payment type, and work day hours already apply live; this commits
+        // any pending rate text, dismisses the keyboard, and gives explicit confirmation.
+        applyRate()
+        rateFocused = false
+        withAnimation { saved = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { saved = false }
     }
 }
 
