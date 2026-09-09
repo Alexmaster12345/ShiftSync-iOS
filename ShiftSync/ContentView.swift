@@ -89,7 +89,10 @@ private struct SplashView: View {
                 scale = 1.0
                 opacity = 1.0
             }
-            withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+            // One slow, full sweep timed to land back at 12 right as the splash
+            // finishes (matches the 2.5s hold in ContentView before it fades out),
+            // instead of a fast repeating spin that gets cut off mid-turn.
+            withAnimation(.linear(duration: 2.5)) {
                 handRotation = true
             }
         }
