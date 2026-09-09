@@ -173,7 +173,7 @@ class ShiftStore: ObservableObject {
                 UserDefaults.standard.removeObject(forKey: activeKey)
                 WatchSessionManager.shared.sendStateUpdate()
                 LocationManager.shared.markWorkedToday()
-                LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
+                LocationManager.shared.scheduleDailyAbsenceCheck()
                 fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
                 return
             }
@@ -187,7 +187,7 @@ class ShiftStore: ObservableObject {
         UserDefaults.standard.removeObject(forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
         LocationManager.shared.markWorkedToday()
-        LocationManager.shared.rescheduleDailyAbsenceCheckFromTomorrow()
+        LocationManager.shared.scheduleDailyAbsenceCheck()
         fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
     }
 

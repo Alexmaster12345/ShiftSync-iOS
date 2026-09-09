@@ -162,26 +162,33 @@ class LocationManager: NSObject, ObservableObject {
 
     // MARK: - Daily absence check
 
-    /// Schedule a repeating 6 PM notification, once per selected work day of the week,
-    /// so it only ever fires on days the user is actually scheduled to work.
+    /// Schedule a repeating 6 PM notification, once per selected work day of the week, so
+    /// it only ever fires on days the user is actually scheduled to work. Safe to call at
+    /// any time of day from anywhere (app launch, settings changes, geofence events) —
+    /// if the user already worked today, today's occurrence is skipped and replaced with
+    /// a one-shot for the next applicable work day, instead of blindly re-arming a 6 PM
+    /// trigger that would still fire later today.
     func scheduleDailyAbsenceCheck() {
         cancelDailyAbsenceCheck()
         guard AppSettings.shared.locationAlertsEnabled,
-              AppSettings.shared.hasWorkplaceCoordinates else { return }
+              AppSettings.shared.hasWorkplaceCoordinates,
+              !AppSettings.shared.workDays.isEmpty else { return }
+
+        let workedToday  = hasWorkedToday()
+        let todayWeekday = Calendar.current.component(.weekday, from: Date())
+
         for weekday in AppSettings.shared.workDays {
+            if workedToday && weekday == todayWeekday { continue }
             var comps = DateComponents()
             comps.weekday = weekday
             comps.hour = 18; comps.minute = 0
-            let content            = UNMutableNotificationContent()
-            content.title          = "Didn't make it to work today?"
-            content.body           = "Tap to log a sick day, vacation, or formation day."
-            content.sound          = .default
-            content.categoryIdentifier = categoryMissedDay
             UNUserNotificationCenter.current().add(
-                UNNotificationRequest(identifier: "\(missedDayID)_\(weekday)", content: content,
+                UNNotificationRequest(identifier: "\(missedDayID)_\(weekday)", content: missedDayContent(),
                                       trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: true))
             )
         }
+
+        if workedToday { scheduleNextMissedDayOneShot() }
     }
 
     func cancelDailyAbsenceCheck() {
@@ -189,13 +196,23 @@ class LocationManager: NSObject, ObservableObject {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
-    /// Cancel today's absence check and reschedule starting from the next selected work day.
-    /// Call this when the user clocks out so they won't get a "missed work" alert for a day they worked.
-    func rescheduleDailyAbsenceCheckFromTomorrow() {
-        cancelDailyAbsenceCheck()
-        guard AppSettings.shared.locationAlertsEnabled,
-              AppSettings.shared.hasWorkplaceCoordinates,
-              !AppSettings.shared.workDays.isEmpty else { return }
+    private func hasWorkedToday() -> Bool {
+        let ts = UserDefaults.standard.double(forKey: lastArrivalKey)
+        return ts > 0 && Calendar.current.isDateInToday(Date(timeIntervalSince1970: ts))
+    }
+
+    private func missedDayContent() -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = "Didn't make it to work today?"
+        content.body  = "Tap to log a sick day, vacation, or formation day."
+        content.sound = .default
+        content.categoryIdentifier = categoryMissedDay
+        return content
+    }
+
+    /// One-shot reminder for the next selected work day after today, since today's
+    /// recurring occurrence was intentionally skipped in scheduleDailyAbsenceCheck().
+    private func scheduleNextMissedDayOneShot() {
         let cal = Calendar.current
         var day = Date()
         for _ in 0..<7 {
@@ -205,13 +222,8 @@ class LocationManager: NSObject, ObservableObject {
         }
         guard let nextWorkDayAt6 = cal.date(bySettingHour: 18, minute: 0, second: 0, of: day) else { return }
         let interval = max(60, nextWorkDayAt6.timeIntervalSinceNow)
-        let content            = UNMutableNotificationContent()
-        content.title          = "Didn't make it to work today?"
-        content.body           = "Tap to log a sick day, vacation, or formation day."
-        content.sound          = .default
-        content.categoryIdentifier = categoryMissedDay
         UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: missedDayID, content: content,
+            UNNotificationRequest(identifier: missedDayID, content: missedDayContent(),
                                   trigger: UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false))
         )
     }
@@ -273,7 +285,7 @@ class LocationManager: NSObject, ObservableObject {
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastDepartureKey)
 
         AlertLog.shared.addDeparture()
-        // Re-enable the daily absence check for future days
+        markWorkedToday()
         scheduleDailyAbsenceCheck()
         deliver(
             title: "You've left work!",
