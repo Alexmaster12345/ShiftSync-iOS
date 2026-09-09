@@ -196,7 +196,11 @@ class LocationManager: NSObject, ObservableObject {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
+    /// True if there's any sign the user worked today — either the live clock in/out
+    /// flow touched lastArrivalKey, or a shift entry (including one added retroactively
+    /// via Manual Entry, or a vacation/sick day) already exists for today.
     private func hasWorkedToday() -> Bool {
+        if ShiftStore.shared.hasShifts(on: Date()) { return true }
         let ts = UserDefaults.standard.double(forKey: lastArrivalKey)
         return ts > 0 && Calendar.current.isDateInToday(Date(timeIntervalSince1970: ts))
     }
@@ -366,12 +370,9 @@ extension LocationManager: UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        if notification.request.content.categoryIdentifier == categoryMissedDay {
-            let ts = UserDefaults.standard.double(forKey: lastArrivalKey)
-            if ts > 0 && Calendar.current.isDateInToday(Date(timeIntervalSince1970: ts)) {
-                completionHandler([]) // user was at work today — hide it
-                return
-            }
+        if notification.request.content.categoryIdentifier == categoryMissedDay, hasWorkedToday() {
+            completionHandler([]) // user was at work today — hide it
+            return
         }
         completionHandler([.banner, .sound])
     }
@@ -399,8 +400,7 @@ extension LocationManager: UNUserNotificationCenterDelegate {
                     self.pendingClockAction = .clockOut
                 } else if category == self.categoryMissedDay {
                     // Only prompt if user wasn't at work today
-                    let ts = UserDefaults.standard.double(forKey: self.lastArrivalKey)
-                    if ts == 0 || !Calendar.current.isDateInToday(Date(timeIntervalSince1970: ts)) {
+                    if !self.hasWorkedToday() {
                         self.pendingClockAction = .logDayOff
                     }
                 }
