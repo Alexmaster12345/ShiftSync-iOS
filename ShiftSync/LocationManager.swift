@@ -162,12 +162,12 @@ class LocationManager: NSObject, ObservableObject {
 
     // MARK: - Daily absence check
 
-    /// Schedule a repeating 6 PM notification, once per selected work day of the week, so
-    /// it only ever fires on days the user is actually scheduled to work. Safe to call at
-    /// any time of day from anywhere (app launch, settings changes, geofence events) —
-    /// if the user already worked today, today's occurrence is skipped and replaced with
-    /// a one-shot for the next applicable work day, instead of blindly re-arming a 6 PM
-    /// trigger that would still fire later today.
+    /// Schedule a repeating notification at the configured reminder time, once per selected
+    /// work day of the week, so it only ever fires on days the user is actually scheduled
+    /// to work. Safe to call at any time of day from anywhere (app launch, settings
+    /// changes, geofence events) — if the user already worked today, today's occurrence
+    /// is skipped and replaced with a one-shot for the next applicable work day, instead
+    /// of blindly re-arming a trigger that would still fire later today.
     func scheduleDailyAbsenceCheck() {
         cancelDailyAbsenceCheck()
         guard AppSettings.shared.locationAlertsEnabled,
@@ -181,7 +181,8 @@ class LocationManager: NSObject, ObservableObject {
             if workedToday && weekday == todayWeekday { continue }
             var comps = DateComponents()
             comps.weekday = weekday
-            comps.hour = 18; comps.minute = 0
+            comps.hour   = AppSettings.shared.missedDayReminderHour
+            comps.minute = AppSettings.shared.missedDayReminderMinute
             UNUserNotificationCenter.current().add(
                 UNNotificationRequest(identifier: "\(missedDayID)_\(weekday)", content: missedDayContent(),
                                       trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: true))
@@ -224,8 +225,10 @@ class LocationManager: NSObject, ObservableObject {
             day = next
             if AppSettings.shared.workDays.contains(cal.component(.weekday, from: day)) { break }
         }
-        guard let nextWorkDayAt6 = cal.date(bySettingHour: 18, minute: 0, second: 0, of: day) else { return }
-        let interval = max(60, nextWorkDayAt6.timeIntervalSinceNow)
+        guard let nextReminderTime = cal.date(bySettingHour: AppSettings.shared.missedDayReminderHour,
+                                              minute: AppSettings.shared.missedDayReminderMinute,
+                                              second: 0, of: day) else { return }
+        let interval = max(60, nextReminderTime.timeIntervalSinceNow)
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: missedDayID, content: missedDayContent(),
                                   trigger: UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false))

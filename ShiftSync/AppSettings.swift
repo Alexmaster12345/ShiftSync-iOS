@@ -67,6 +67,9 @@ class AppSettings: ObservableObject {
     // Geofence radius in meters. Below ~30m, GPS accuracy makes region monitoring
     // unreliable — Apple recommends 100m+, but 75 is the pre-existing default here.
     @Published var geofenceRadius: Double = 75 { didSet { persist() } }
+    // Time of day the "Didn't make it to work today?" reminder fires. Defaults to 6 PM.
+    @Published var missedDayReminderHour: Int = 18   { didSet { persist() } }
+    @Published var missedDayReminderMinute: Int = 0  { didSet { persist() } }
 
     // Personal info
     @Published var email: String = ""      { didSet { persist() } }
@@ -106,6 +109,8 @@ class AppSettings: ObservableObject {
         var overtimeMultiplier: Double?
         var workDays: [Int]?
         var geofenceRadius: Double?
+        var missedDayReminderHour: Int?
+        var missedDayReminderMinute: Int?
     }
 
     init() {
@@ -131,6 +136,8 @@ class AppSettings: ObservableObject {
         overtimeMultiplier    = s.overtimeMultiplier   ?? 1.5
         workDays              = Set(s.workDays ?? [2, 3, 4, 5, 6])
         geofenceRadius        = s.geofenceRadius ?? 75
+        missedDayReminderHour   = s.missedDayReminderHour   ?? 18
+        missedDayReminderMinute = s.missedDayReminderMinute ?? 0
     }
 
     private func persist() {
@@ -150,7 +157,9 @@ class AppSettings: ObservableObject {
             weeklyOvertimeHours: weeklyOvertimeHours,
             overtimeMultiplier: overtimeMultiplier,
             workDays: Array(workDays),
-            geofenceRadius: geofenceRadius
+            geofenceRadius: geofenceRadius,
+            missedDayReminderHour: missedDayReminderHour,
+            missedDayReminderMinute: missedDayReminderMinute
         )
         UserDefaults.standard.set(try? JSONEncoder().encode(s), forKey: key)
     }
@@ -170,5 +179,18 @@ class AppSettings: ObservableObject {
         if workDays.count == 7 { return "Every day" }
         if workDays == [2, 3, 4, 5, 6] { return "Weekdays (Mon–Fri)" }
         return workDays.sorted().map { Self.weekdaySymbolsShort[$0 - 1] }.joined(separator: ", ")
+    }
+
+    // Bindable Date wrapper around missedDayReminderHour/Minute for use with DatePicker —
+    // only the time-of-day components matter, the date portion is ignored.
+    var missedDayReminderTime: Date {
+        get {
+            Calendar.current.date(bySettingHour: missedDayReminderHour, minute: missedDayReminderMinute, second: 0, of: Date()) ?? Date()
+        }
+        set {
+            let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+            missedDayReminderHour   = comps.hour ?? 18
+            missedDayReminderMinute = comps.minute ?? 0
+        }
     }
 }

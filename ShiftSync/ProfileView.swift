@@ -687,7 +687,23 @@ struct NotificationPrefsView: View {
                     }
                     .padding(.horizontal, 16).padding(.bottom, 14)
 
-                    Text("\"Didn't make it to work today?\" reminders only fire on the days you select here.")
+                    Divider().background(Color.darkBg)
+
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8).fill(Color.orangeAccent.opacity(0.15)).frame(width: 34, height: 34)
+                            Image(systemName: "clock.badge.exclamationmark").font(.system(size: 14)).foregroundColor(.orangeAccent)
+                        }
+                        Text("Reminder Time").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                        Spacer()
+                        DatePicker("", selection: reminderTimeBinding, displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+                            .datePickerStyle(.compact)
+                            .tint(.shiftBlue)
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+
+                    Text("\"Didn't make it to work today?\" fires at the time above, only on the days you select here.")
                         .font(.system(size: 11))
                         .foregroundColor(.ssTextMuted)
                         .padding(.horizontal, 16).padding(.bottom, 14)
@@ -714,6 +730,19 @@ struct NotificationPrefsView: View {
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+    }
+
+    // ObservableObject's automatic $-binding synthesis only covers stored @Published
+    // properties, not the computed missedDayReminderTime — so build the Binding by hand
+    // and reschedule whenever the picker commits a new time.
+    private var reminderTimeBinding: Binding<Date> {
+        Binding(
+            get: { settings.missedDayReminderTime },
+            set: {
+                settings.missedDayReminderTime = $0
+                locationManager.scheduleDailyAbsenceCheck()
+            }
+        )
     }
 
     private func dayChip(weekday: Int) -> some View {
