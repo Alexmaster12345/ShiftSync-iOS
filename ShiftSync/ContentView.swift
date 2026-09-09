@@ -47,6 +47,7 @@ private struct SplashView: View {
     @State private var scale: CGFloat = 0.6
     @State private var opacity: Double = 0
     @State private var dotPhase = 0
+    @State private var handRotation = false
 
     private let dotTimer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
@@ -88,6 +89,9 @@ private struct SplashView: View {
                 scale = 1.0
                 opacity = 1.0
             }
+            withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                handRotation = true
+            }
         }
         .onReceive(dotTimer) { _ in
             dotPhase = (dotPhase + 1) % 3
@@ -111,11 +115,12 @@ private struct SplashView: View {
                     .rotationEffect(.degrees(Double(deg)))
             }
 
-            // Single hand pointing to 12
+            // Hand sweeps like a clock's second hand, giving the loading screen motion
             Capsule()
                 .fill(Color.shiftBlue)
                 .frame(width: 5, height: 58)
                 .offset(y: -29)
+                .rotationEffect(.degrees(handRotation ? 360 : 0))
         }
     }
 
