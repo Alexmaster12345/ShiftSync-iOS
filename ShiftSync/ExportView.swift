@@ -193,8 +193,6 @@ struct ExportView: View {
     private func previewRow(_ entry: ShiftEntry) -> some View {
         let fmt = DateFormatter()
         fmt.dateFormat = "d MMM"
-        let timeFmt = DateFormatter()
-        timeFmt.dateFormat = "HH:mm"
         let endDate = entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60)
         return HStack(spacing: 10) {
             Text(fmt.string(from: entry.startedAt))
@@ -206,7 +204,7 @@ struct ExportView: View {
             if entry.shiftType.isDayType {
                 Text("\(entry.dayCount) day\(entry.dayCount == 1 ? "" : "s")").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
             } else {
-                Text("\(timeFmt.string(from: entry.startedAt))–\(timeFmt.string(from: endDate))")
+                Text("\(formatTime(entry.startedAt))–\(formatTime(endDate))")
                     .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
             }
             Text("\(settings.currency.symbol)\(String(format: "%.2f", entry.estimatedPay))")
@@ -221,7 +219,6 @@ struct ExportView: View {
 
     private func exportCSV() {
         let dateFmt = DateFormatter(); dateFmt.dateFormat = "yyyy-MM-dd"
-        let timeFmt = DateFormatter(); timeFmt.dateFormat = "HH:mm"
         var csv = "Date,Type,Start,End,Duration (h),Pay (\(settings.currency.rawValue))\n"
         for e in filteredEntries {
             let endDate = e.startedAt.addingTimeInterval(Double(e.durationMinutes) * 60)
@@ -230,7 +227,7 @@ struct ExportView: View {
             if e.shiftType.isDayType {
                 csv += "\(dateFmt.string(from: e.startedAt)),\(e.shiftType.label),,,\(String(format: "%.1f", Double(e.dayCount))),\(pay)\n"
             } else {
-                csv += "\(dateFmt.string(from: e.startedAt)),\(e.shiftType.label),\(timeFmt.string(from: e.startedAt)),\(timeFmt.string(from: endDate)),\(hours),\(pay)\n"
+                csv += "\(dateFmt.string(from: e.startedAt)),\(e.shiftType.label),\(formatTime(e.startedAt)),\(formatTime(endDate)),\(hours),\(pay)\n"
             }
         }
         share(data: Data(csv.utf8), filename: "ShiftSync-\(selectedRange.rawValue.replacingOccurrences(of: " ", with: "-")).csv")
@@ -245,7 +242,6 @@ struct ExportView: View {
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: pageW, height: pageH))
 
         let dateFmt = DateFormatter(); dateFmt.dateFormat = "d MMM yyyy"
-        let timeFmt = DateFormatter(); timeFmt.dateFormat = "HH:mm"
         let (rangeStart, rangeEnd) = selectedRange.dates()
         let rangeLabel = selectedRange == .allTime
             ? "All Time"
@@ -338,8 +334,8 @@ struct ExportView: View {
                 let rowValues: [String] = [
                     dateFmt.string(from: entry.startedAt),
                     entry.shiftType.label,
-                    entry.shiftType.isDayType ? "—" : timeFmt.string(from: entry.startedAt),
-                    entry.shiftType.isDayType ? "—" : timeFmt.string(from: endDate),
+                    entry.shiftType.isDayType ? "—" : formatTime(entry.startedAt),
+                    entry.shiftType.isDayType ? "—" : formatTime(endDate),
                     entry.shiftType.isDayType ? "\(entry.dayCount) day\(entry.dayCount == 1 ? "" : "s")" : String(format: "%.1fh", Double(entry.durationMinutes) / 60.0),
                     "\(settings.currency.symbol)\(String(format: "%.2f", entry.estimatedPay))"
                 ]

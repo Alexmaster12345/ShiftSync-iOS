@@ -78,6 +78,9 @@ class AppSettings: ObservableObject {
 
     // Appearance
     @Published var appTheme: AppTheme = .light { didSet { persist() } }
+    // Controls how this app renders shift/activity times itself (Home, Calendar,
+    // Export). Native DatePicker wheels always follow the device's own setting.
+    @Published var use24HourClock: Bool = false { didSet { persist() } }
 
     // Overtime rules
     @Published var overtimeEnabled: Bool = false       { didSet { persist() } }
@@ -111,6 +114,7 @@ class AppSettings: ObservableObject {
         var geofenceRadius: Double?
         var missedDayReminderHour: Int?
         var missedDayReminderMinute: Int?
+        var use24HourClock: Bool?
     }
 
     init() {
@@ -138,6 +142,7 @@ class AppSettings: ObservableObject {
         geofenceRadius        = s.geofenceRadius ?? 75
         missedDayReminderHour   = s.missedDayReminderHour   ?? 18
         missedDayReminderMinute = s.missedDayReminderMinute ?? 0
+        use24HourClock          = s.use24HourClock ?? false
     }
 
     private func persist() {
@@ -159,7 +164,8 @@ class AppSettings: ObservableObject {
             workDays: Array(workDays),
             geofenceRadius: geofenceRadius,
             missedDayReminderHour: missedDayReminderHour,
-            missedDayReminderMinute: missedDayReminderMinute
+            missedDayReminderMinute: missedDayReminderMinute,
+            use24HourClock: use24HourClock
         )
         UserDefaults.standard.set(try? JSONEncoder().encode(s), forKey: key)
     }

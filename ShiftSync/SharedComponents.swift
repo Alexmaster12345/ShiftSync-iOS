@@ -85,15 +85,9 @@ struct WorkedShiftRow: View {
     let entry: ShiftEntry
     var onTap: (() -> Void)? = nil
 
-    private let timeFmt: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "hh:mm a"
-        return f
-    }()
-
     private var timeRange: String {
-        let start = timeFmt.string(from: entry.startedAt)
-        let end   = timeFmt.string(from: entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60))
+        let start = formatTime(entry.startedAt)
+        let end   = formatTime(entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60))
         return "\(start) – \(end)"
     }
 
@@ -241,15 +235,9 @@ struct ScheduleShiftRow: View {
     let entry: ShiftEntry
     var onTap: (() -> Void)? = nil
 
-    private let timeFmt: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "hh:mm a"
-        return f
-    }()
-
     private var timeRange: String {
-        let s = timeFmt.string(from: entry.startedAt)
-        let e = timeFmt.string(from: entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60))
+        let s = formatTime(entry.startedAt)
+        let e = formatTime(entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60))
         return "\(s) - \(e)"
     }
 

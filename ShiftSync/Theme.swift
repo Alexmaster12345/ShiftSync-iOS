@@ -42,3 +42,17 @@ func formatElapsedHMS(_ totalSeconds: Int) -> String {
 func formatCurrency(_ amount: Double) -> String {
     String(format: "%@%.2f", AppSettings.shared.currency.symbol, amount)
 }
+
+// Single source of truth for how shift/activity times are displayed, so Home,
+// Calendar, and Export all agree with each other (previously some screens
+// hardcoded 12-hour "hh:mm a" and others hardcoded 24-hour "HH:mm").
+// Note: this only controls text this app renders itself — native DatePicker
+// wheels (Manual Entry, Reminder Time) always follow the device's own
+// Region/Language 12h/24h setting; iOS doesn't expose a way for an app to
+// override that independently.
+private let timeFormatter24h: DateFormatter = { let f = DateFormatter(); f.dateFormat = "HH:mm"; return f }()
+private let timeFormatter12h: DateFormatter = { let f = DateFormatter(); f.dateFormat = "hh:mm a"; return f }()
+
+func formatTime(_ date: Date) -> String {
+    (AppSettings.shared.use24HourClock ? timeFormatter24h : timeFormatter12h).string(from: date)
+}

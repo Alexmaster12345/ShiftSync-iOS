@@ -30,9 +30,7 @@ struct HomeView: View {
 
     private var startTimeLabel: String {
         guard let start = store.activeShiftStart else { return "--:--" }
-        let fmt = DateFormatter()
-        fmt.dateFormat = "hh:mm a"
-        return fmt.string(from: start)
+        return formatTime(start)
     }
 
     private var activeEarnings: Double {
@@ -449,15 +447,13 @@ struct HomeView: View {
     }
 
     private func recentRow(_ entry: ShiftEntry) -> some View {
-        let timeFmt  = DateFormatter()
-        timeFmt.dateFormat = "hh:mm a"
         let endDate  = entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60)
         let isOT     = entry.shiftType == .overtime
         let accent   = dayAccent(for: entry.shiftType)
         let titleTxt = entry.shiftType.activityTitle ?? relativeDate(for: entry.startedAt)
         let infoTxt  = entry.shiftType.isDayType
             ? daySubtitle(for: entry.shiftType)
-            : "\(timeFmt.string(from: entry.startedAt)) – \(timeFmt.string(from: endDate))"
+            : "\(formatTime(entry.startedAt)) – \(formatTime(endDate))"
 
         // Compute duration label and pay using observed settings so the row
         // re-renders immediately when workDayHours or rate changes.
@@ -592,10 +588,8 @@ struct HomeView: View {
 
     private func shiftOptionsSummary(for entry: ShiftEntry) -> String {
         if entry.shiftType.isDayType { return "Full Day" }
-        let fmt = DateFormatter()
-        fmt.dateFormat = "hh:mm a"
         let end = entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60)
-        return "\(fmt.string(from: entry.startedAt)) – \(fmt.string(from: end))  ·  \(formatDuration(entry.durationMinutes))"
+        return "\(formatTime(entry.startedAt)) – \(formatTime(end))  ·  \(formatDuration(entry.durationMinutes))"
     }
 
     private func relativeDate(for date: Date) -> String {

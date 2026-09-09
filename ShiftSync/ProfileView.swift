@@ -814,6 +814,47 @@ struct AppearanceView: View {
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
+                // Time Format
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
+                            Image(systemName: "clock").font(.system(size: 15)).foregroundColor(.shiftBlue)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Time Format").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Used for shift times on Home, Calendar, and Export")
+                                .font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+
+                    HStack(spacing: 8) {
+                        ForEach([false, true], id: \.self) { use24h in
+                            Button(action: { settings.use24HourClock = use24h }) {
+                                Text(use24h ? "24-Hour" : "12-Hour (AM/PM)")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(settings.use24HourClock == use24h ? .white : .ssTextSecondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 9)
+                                    .background(settings.use24HourClock == use24h ? Color.shiftBlue : Color.darkBg)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 16).padding(.bottom, 12)
+
+                    Text("Native time pickers (Manual Entry, Reminder Time) always follow your iPhone's own 12/24-hour Region setting — iOS doesn't let apps override that.")
+                        .font(.system(size: 10))
+                        .foregroundColor(.ssTextMuted)
+                        .padding(.horizontal, 16).padding(.bottom, 14)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
                 Spacer().frame(height: 32)
             }
             .padding(.horizontal, 16)
