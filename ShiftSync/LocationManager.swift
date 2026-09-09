@@ -263,6 +263,11 @@ class LocationManager: NSObject, ObservableObject {
     /// way handleArrival() does — GPS jitter right at the geofence boundary can cause
     /// didExitRegion to fire more than once for the same real-world exit.
     private func handleDeparture() {
+        // Nothing to clock out of if not currently clocked in — without this, clocking
+        // out manually (e.g. from the Home button) and then walking out the door moments
+        // later still fires a redundant "time to clock out" notification.
+        guard ShiftStore.shared.activeShiftStart != nil else { return }
+
         let lastDeparture = UserDefaults.standard.double(forKey: lastDepartureKey)
         if lastDeparture > 0, Date().timeIntervalSince1970 - lastDeparture < 1800 { return }
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastDepartureKey)
