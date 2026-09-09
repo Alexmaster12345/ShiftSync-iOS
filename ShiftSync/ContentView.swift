@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreLocation
+import Combine
 
 // MARK: - Root
 struct ContentView: View {
@@ -45,68 +46,88 @@ struct ContentView: View {
 private struct SplashView: View {
     @State private var scale: CGFloat = 0.6
     @State private var opacity: Double = 0
-    @State private var pulse = false
-    @State private var minuteHandSpin = false
-    @State private var hourHandSpin = false
+    @State private var dotPhase = 0
+
+    private let dotTimer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ZStack {
-            // Fixed white background matching LaunchScreen.storyboard's background.
-            Color.white.ignoresSafeArea()
+            RadialGradient(
+                colors: [Color(red: 0.97, green: 0.98, blue: 1.0), Color(red: 0.89, green: 0.93, blue: 0.99)],
+                center: .center, startRadius: 20, endRadius: 500
+            )
+            .ignoresSafeArea()
 
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(colors: [.shiftBlue, .shiftBlueDark],
-                                         startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 120, height: 120)
-                    .shadow(color: Color.shiftBlue.opacity(0.4), radius: 20, y: 10)
+            VStack(spacing: 18) {
+                clockFace
+                    .scaleEffect(scale)
+                    .opacity(opacity)
 
-                // Tick marks
-                ForEach(0..<12, id: \.self) { i in
-                    Capsule()
-                        .fill(Color.white.opacity(0.55))
-                        .frame(width: 2, height: 6)
-                        .offset(y: -42)
-                        .rotationEffect(.degrees(Double(i) * 30))
+                loadingDots
+
+                VStack(spacing: 8) {
+                    Text("ShiftSync")
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(red: 0.11, green: 0.15, blue: 0.2))
+
+                    HStack(spacing: 8) {
+                        Rectangle().fill(Color.shiftBlue.opacity(0.4)).frame(width: 28, height: 1)
+                        Text("INTELLIGENT SYNC")
+                            .font(.system(size: 11, weight: .semibold))
+                            .kerning(2)
+                            .foregroundColor(.shiftBlue)
+                        Rectangle().fill(Color.shiftBlue.opacity(0.4)).frame(width: 28, height: 1)
+                    }
                 }
-
-                // Hour hand
-                Capsule()
-                    .fill(Color.white.opacity(0.9))
-                    .frame(width: 4, height: 20)
-                    .offset(y: -10)
-                    .rotationEffect(.degrees(hourHandSpin ? 360 : 0))
-
-                // Minute hand
-                Capsule()
-                    .fill(Color.white)
-                    .frame(width: 3, height: 32)
-                    .offset(y: -16)
-                    .rotationEffect(.degrees(minuteHandSpin ? 360 : 0))
-
-                Circle()
-                    .fill(Color.shiftBlue)
-                    .frame(width: 10, height: 10)
-                    .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+                .opacity(opacity)
             }
-            .scaleEffect(scale * (pulse ? 1.06 : 1.0))
-            .opacity(opacity)
+            .offset(y: -140)
         }
         .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.65)) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
                 scale = 1.0
                 opacity = 1.0
             }
-            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true).delay(0.55)) {
-                pulse = true
+        }
+        .onReceive(dotTimer) { _ in
+            dotPhase = (dotPhase + 1) % 3
+        }
+    }
+
+    private var clockFace: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+                .frame(width: 168, height: 168)
+                .overlay(Circle().stroke(Color(red: 0.82, green: 0.86, blue: 0.93), lineWidth: 1.5))
+                .shadow(color: Color.shiftBlue.opacity(0.12), radius: 24, y: 12)
+
+            // Cardinal tick marks
+            ForEach([0, 90, 180, 270], id: \.self) { deg in
+                Capsule()
+                    .fill(Color(red: 0.78, green: 0.82, blue: 0.9))
+                    .frame(width: 3, height: 10)
+                    .offset(y: -66)
+                    .rotationEffect(.degrees(Double(deg)))
             }
-            withAnimation(.linear(duration: 3.0).repeatForever(autoreverses: false)) {
-                minuteHandSpin = true
-            }
-            withAnimation(.linear(duration: 24.0).repeatForever(autoreverses: false)) {
-                hourHandSpin = true
+
+            // Single hand pointing to 12
+            Capsule()
+                .fill(Color.shiftBlue)
+                .frame(width: 5, height: 58)
+                .offset(y: -29)
+        }
+    }
+
+    private var loadingDots: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .fill(Color.shiftBlue.opacity(i == dotPhase ? 1.0 : 0.3))
+                    .frame(width: 7, height: 7)
             }
         }
+        .opacity(opacity)
     }
 }
 
