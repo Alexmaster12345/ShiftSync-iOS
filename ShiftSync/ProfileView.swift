@@ -770,10 +770,10 @@ struct AppearanceView: View {
     @ObservedObject private var settings = AppSettings.shared
     @Environment(\.dismiss) private var dismiss
 
-    private let options: [(theme: AppTheme, label: String, icon: String)] = [
-        (.dark,   "Dark",   "moon.fill"),
-        (.light,  "Light",  "sun.max.fill"),
-        (.system, "System", "circle.lefthalf.filled"),
+    private let options: [(theme: AppTheme, label: String)] = [
+        (.dark,   "Dark"),
+        (.light,  "Light"),
+        (.system, "System"),
     ]
 
     var body: some View {
@@ -781,16 +781,37 @@ struct AppearanceView: View {
             VStack(spacing: 20) {
                 navHeader(title: "Appearance", dismiss: dismiss)
 
-                HStack(spacing: 12) {
-                    ForEach(options, id: \.theme) { opt in
-                        Button(action: { settings.appTheme = opt.theme }) {
-                            themeChip(label: opt.label, icon: opt.icon,
-                                      selected: settings.appTheme == opt.theme)
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
+                            Image(systemName: "moon.circle.fill").font(.system(size: 15)).foregroundColor(.shiftBlue)
                         }
-                        .buttonStyle(.plain)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Theme").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Controls the app's overall color scheme")
+                                .font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                        }
+                        Spacer()
                     }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+
+                    HStack(spacing: 8) {
+                        ForEach(options, id: \.theme) { opt in
+                            Button(action: { settings.appTheme = opt.theme }) {
+                                Text(opt.label)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(settings.appTheme == opt.theme ? .white : .ssTextSecondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 9)
+                                    .background(settings.appTheme == opt.theme ? Color.shiftBlue : Color.darkBg)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 16).padding(.bottom, 14)
                 }
-                .padding(16)
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
@@ -863,24 +884,6 @@ struct AppearanceView: View {
         .navigationBarHidden(true)
     }
 
-    private func themeChip(label: String, icon: String, selected: Bool) -> some View {
-        VStack(spacing: 8) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(selected ? Color.shiftBlue : Color.darkBg)
-                    .frame(height: 60)
-                    .overlay(RoundedRectangle(cornerRadius: 12)
-                        .stroke(selected ? Color.shiftBlue : Color.ssTextMuted.opacity(0.3), lineWidth: selected ? 2 : 1))
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(selected ? .white : .ssTextMuted)
-            }
-            Text(label)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(selected ? .ssTextPrimary : .ssTextMuted)
-        }
-        .frame(maxWidth: .infinity)
-    }
 }
 
 // MARK: - Overtime Rules View
