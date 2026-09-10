@@ -60,6 +60,11 @@ struct ProfileView: View {
                     navRow(icon: "lock.shield.fill", label: "Security & Privacy", color: .shiftBlue, destination: AnyView(SecurityPrivacyView(store: store, onLogout: onLogout)))
                 }
 
+                // ── Help ─────────────────────────────────────────────────
+                settingsSection(title: "HELP") {
+                    navRow(icon: "book.fill", label: "How to Use ShiftSync", color: .shiftBlue, destination: AnyView(HowToUseView()))
+                }
+
                 // ── Legal ────────────────────────────────────────────────
                 settingsSection(title: "LEGAL") {
                     navRow(icon: "doc.text.fill", label: "Terms of Use", color: .ssTextSecondary, destination: AnyView(TermsOfUseView()))
@@ -590,6 +595,61 @@ struct PrivacyPolicyView: View {
                     icon: "square.and.arrow.up.on.square.fill", color: .orangeAccent,
                     title: "Your Choice to Export",
                     body: "The only way data leaves this app is if you explicitly export a report or backup file yourself (e.g. via AirDrop, email, or Files)."
+                )
+
+                Spacer().frame(height: 32)
+            }
+            .padding(.horizontal, 16)
+        }
+        .background(Color.darkBg.ignoresSafeArea())
+        .navigationBarHidden(true)
+    }
+}
+
+// MARK: - How to Use
+
+struct HowToUseView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                navHeader(title: "How to Use ShiftSync", dismiss: dismiss)
+
+                legalCard(
+                    icon: "clock.fill", color: .shiftBlue,
+                    title: "Clock In / Out",
+                    body: "Tap Clock In on the Home screen to start a shift, and Clock Out when you're done. Pay is calculated live using your rate in Salary & Currency. Your Apple Watch mirrors clock in/out confirmations automatically."
+                )
+                legalCard(
+                    icon: "square.and.pencil", color: .tealAccent,
+                    title: "Manual Entry & Day Types",
+                    body: "Tap the + button to log a shift after the fact, or record Vacation, Sick, Formation, Holiday, or Company Fun Day time off over a date range. Tap any entry on Home or Calendar to edit or delete it."
+                )
+                legalCard(
+                    icon: "banknote.fill", color: .greenAccent,
+                    title: "Pay & Overtime",
+                    body: "Set your hourly or monthly rate, currency, and work day hours in Profile → Salary & Currency. Turn on Overtime Rules to automatically split shifts into regular + overtime pay once your daily threshold is exceeded."
+                )
+                legalCard(
+                    icon: "calendar", color: .orangeAccent,
+                    title: "Calendar & Export",
+                    body: "The Calendar tab shows every logged shift by day. Profile → Export Reports lets you generate a CSV or PDF report for a custom date range to share or file."
+                )
+                legalCard(
+                    icon: "location.fill", color: .redAccent,
+                    title: "Workplace Alerts",
+                    body: "Set your workplace on the map (Workplace tab) to get notified when you arrive or leave, with one-tap clock in/out right from the notification. Adjust the detection radius if alerts fire too early or late."
+                )
+                legalCard(
+                    icon: "house.fill", color: .shiftBlue,
+                    title: "Work From Home",
+                    body: "No office to detect? Profile → Notifications → Work From Home lets you set fixed Clock In / Clock Out times instead, reminding you on your selected Work Days without needing a workplace location."
+                )
+                legalCard(
+                    icon: "arrow.up.arrow.down.square.fill", color: .tealAccent,
+                    title: "Backup Your Data",
+                    body: "Profile → Security & Privacy → Export Backup saves all your shift records to a JSON file. Import it on another device to pick up right where you left off."
                 )
 
                 Spacer().frame(height: 32)
