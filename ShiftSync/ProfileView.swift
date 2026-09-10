@@ -815,26 +815,6 @@ struct AppearanceView: View {
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("Dark", systemImage: "moon.fill")
-                        .font(.system(size: 13, weight: .semibold)).foregroundColor(.ssTextPrimary)
-                    Text("Optimised for low-light environments.")
-                        .font(.system(size: 13)).foregroundColor(.ssTextSecondary)
-                    Label("Light", systemImage: "sun.max.fill")
-                        .font(.system(size: 13, weight: .semibold)).foregroundColor(.ssTextPrimary)
-                        .padding(.top, 4)
-                    Text("Classic bright interface.")
-                        .font(.system(size: 13)).foregroundColor(.ssTextSecondary)
-                    Label("System", systemImage: "circle.lefthalf.filled")
-                        .font(.system(size: 13, weight: .semibold)).foregroundColor(.ssTextPrimary)
-                        .padding(.top, 4)
-                    Text("Follows your iPhone's appearance setting automatically.")
-                        .font(.system(size: 13)).foregroundColor(.ssTextSecondary)
-                }
-                .padding(16)
-                .background(Color.darkCard)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-
                 // Time Format
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 12) {
