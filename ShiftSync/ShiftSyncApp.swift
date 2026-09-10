@@ -9,6 +9,9 @@ struct ShiftSyncApp: App {
             LocationManager.shared.restoreMonitoring()
             LocationManager.shared.scheduleDailyAbsenceCheck()
         }
+        if AppSettings.shared.workFromHomeEnabled {
+            LocationManager.shared.scheduleWorkFromHomeReminders()
+        }
         // Activate Watch session so state syncs immediately on launch
         _ = WatchSessionManager.shared
     }

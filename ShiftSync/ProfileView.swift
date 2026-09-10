@@ -665,6 +665,72 @@ struct NotificationPrefsView: View {
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
+                // Work From Home
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
+                            Image(systemName: "house.fill").font(.system(size: 14)).foregroundColor(.tealAccent)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Work From Home").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text(settings.workFromHomeEnabled ? "On — reminded to clock in/out at set times" : "Off")
+                                .font(.system(size: 12))
+                                .foregroundColor(settings.workFromHomeEnabled ? .greenAccent : .ssTextMuted)
+                        }
+                        Spacer()
+                        Toggle("", isOn: $settings.workFromHomeEnabled)
+                            .tint(.shiftBlue)
+                            .onChange(of: settings.workFromHomeEnabled) { _, enabled in
+                                if enabled {
+                                    locationManager.requestNotificationPermission()
+                                    locationManager.scheduleWorkFromHomeReminders()
+                                } else {
+                                    locationManager.cancelWorkFromHomeReminders()
+                                }
+                            }
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+
+                    if settings.workFromHomeEnabled {
+                        Divider().background(Color.darkBg)
+
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8).fill(Color.orangeAccent.opacity(0.15)).frame(width: 34, height: 34)
+                                Image(systemName: "sunrise.fill").font(.system(size: 14)).foregroundColor(.orangeAccent)
+                            }
+                            Text("Clock In Time").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Spacer()
+                            DatePicker("", selection: clockInTimeBinding, displayedComponents: .hourAndMinute)
+                                .labelsHidden().datePickerStyle(.compact).tint(.shiftBlue)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 12)
+
+                        Divider().background(Color.darkBg)
+
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
+                                Image(systemName: "sunset.fill").font(.system(size: 14)).foregroundColor(.shiftBlue)
+                            }
+                            Text("Clock Out Time").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Spacer()
+                            DatePicker("", selection: clockOutTimeBinding, displayedComponents: .hourAndMinute)
+                                .labelsHidden().datePickerStyle(.compact).tint(.shiftBlue)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 12)
+
+                        Text("Doesn't need a workplace location — reminders fire at these times on the Work Days you select below, no geofencing required.")
+                            .font(.system(size: 11))
+                            .foregroundColor(.ssTextMuted)
+                            .padding(.horizontal, 16).padding(.bottom, 14)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
                 // Work Days
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 12) {
@@ -745,11 +811,32 @@ struct NotificationPrefsView: View {
         )
     }
 
+    private var clockInTimeBinding: Binding<Date> {
+        Binding(
+            get: { settings.clockInReminderTime },
+            set: {
+                settings.clockInReminderTime = $0
+                locationManager.scheduleWorkFromHomeReminders()
+            }
+        )
+    }
+
+    private var clockOutTimeBinding: Binding<Date> {
+        Binding(
+            get: { settings.clockOutReminderTime },
+            set: {
+                settings.clockOutReminderTime = $0
+                locationManager.scheduleWorkFromHomeReminders()
+            }
+        )
+    }
+
     private func dayChip(weekday: Int) -> some View {
         let isOn = settings.workDays.contains(weekday)
         return Button(action: {
             if isOn { settings.workDays.remove(weekday) } else { settings.workDays.insert(weekday) }
             locationManager.scheduleDailyAbsenceCheck()
+            locationManager.scheduleWorkFromHomeReminders()
         }) {
             Text(AppSettings.weekdaySymbolsShort[weekday - 1].prefix(1))
                 .font(.system(size: 13, weight: .bold))

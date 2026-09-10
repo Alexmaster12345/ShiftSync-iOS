@@ -20,6 +20,8 @@ class LocationManager: NSObject, ObservableObject {
     private let missedDayID      = "ss_daily_missed"
     private let lastArrivalKey   = "ss_last_arrival_ts"
     private let lastDepartureKey = "ss_last_departure_ts"
+    private let wfhClockInID     = "ss_wfh_clockin"
+    private let wfhClockOutID    = "ss_wfh_clockout"
 
     enum PendingClockAction { case clockIn, clockOut, logDayOff }
 
@@ -53,6 +55,13 @@ class LocationManager: NSObject, ObservableObject {
         default:
             break
         }
+    }
+
+    /// Like requestPermissions(), but skips the CoreLocation prompt — for features like
+    /// Work From Home reminders that don't need location access at all.
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
     }
 
     static func openSettings() {
@@ -197,6 +206,69 @@ class LocationManager: NSObject, ObservableObject {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
+    // MARK: - Work From Home reminders
+
+    /// Schedules repeating "time to clock in" / "time to clock out" notifications at the
+    /// configured times, once per selected work day — independent of geofencing, for users
+    /// with no workplace location to detect arriving at or leaving from. Reuses the same
+    /// arrive/depart categories (and their Clock In / Clock Out action buttons) as the
+    /// geofence-based alerts. Safe to call anytime; today's clock-in occurrence is skipped
+    /// if already worked today, same reasoning as scheduleDailyAbsenceCheck().
+    func scheduleWorkFromHomeReminders() {
+        cancelWorkFromHomeReminders()
+        guard AppSettings.shared.workFromHomeEnabled, !AppSettings.shared.workDays.isEmpty else { return }
+
+        let workedToday        = hasWorkedToday()
+        let isClockedIn         = ShiftStore.shared.activeShiftStart != nil
+        let todayWeekday        = Calendar.current.component(.weekday, from: Date())
+
+        for weekday in AppSettings.shared.workDays {
+            let isToday = weekday == todayWeekday
+
+            // Skip today's clock-in reminder if already worked today.
+            if !(workedToday && isToday) {
+                scheduleWeeklyReminder(
+                    identifier: "\(wfhClockInID)_\(weekday)", weekday: weekday,
+                    hour: AppSettings.shared.clockInReminderHour, minute: AppSettings.shared.clockInReminderMinute,
+                    title: "Time to clock in", body: "Tap to start your shift, or use the Clock In button.",
+                    category: categoryArrive
+                )
+            }
+            // Skip today's clock-out reminder if not currently clocked in — nothing to
+            // clock out of. Future occurrences are always scheduled since we can't know
+            // that day's state in advance.
+            if !isToday || isClockedIn {
+                scheduleWeeklyReminder(
+                    identifier: "\(wfhClockOutID)_\(weekday)", weekday: weekday,
+                    hour: AppSettings.shared.clockOutReminderHour, minute: AppSettings.shared.clockOutReminderMinute,
+                    title: "Time to clock out", body: "Tap to end your shift, or use the Clock Out button.",
+                    category: categoryDepart
+                )
+            }
+        }
+    }
+
+    func cancelWorkFromHomeReminders() {
+        let ids = (1...7).flatMap { ["\(wfhClockInID)_\($0)", "\(wfhClockOutID)_\($0)"] }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+    }
+
+    private func scheduleWeeklyReminder(identifier: String, weekday: Int, hour: Int, minute: Int,
+                                        title: String, body: String, category: String) {
+        var comps = DateComponents()
+        comps.weekday = weekday
+        comps.hour = hour; comps.minute = minute
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body  = body
+        content.sound = .default
+        content.categoryIdentifier = category
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: identifier, content: content,
+                                  trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: true))
+        )
+    }
+
     /// True if there's any sign the user worked today — either the live clock in/out
     /// flow touched lastArrivalKey, or a shift entry (including one added retroactively
     /// via Manual Entry, or a vacation/sick day) already exists for today.
@@ -270,6 +342,7 @@ class LocationManager: NSObject, ObservableObject {
         AlertLog.shared.addArrival()
         markWorkedToday()
         cancelDailyAbsenceCheck()
+        scheduleWorkFromHomeReminders()
         deliver(
             title: "You've arrived at work!",
             body: "Tap to clock in, or use the Clock In button.",
@@ -294,6 +367,7 @@ class LocationManager: NSObject, ObservableObject {
         AlertLog.shared.addDeparture()
         markWorkedToday()
         scheduleDailyAbsenceCheck()
+        scheduleWorkFromHomeReminders()
         deliver(
             title: "You've left work!",
             body: "Tap to clock out, or use the Clock Out button.",

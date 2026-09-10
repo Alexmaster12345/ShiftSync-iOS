@@ -70,6 +70,14 @@ class AppSettings: ObservableObject {
     // Time of day the "Didn't make it to work today?" reminder fires. Defaults to 6 PM.
     @Published var missedDayReminderHour: Int = 18   { didSet { persist() } }
     @Published var missedDayReminderMinute: Int = 0  { didSet { persist() } }
+    // Work From Home: scheduled clock in/out reminders that fire at fixed times on
+    // your Work Days, instead of relying on geofencing (which needs a workplace to
+    // detect arriving/leaving from — no use when there's no office to geofence).
+    @Published var workFromHomeEnabled: Bool = false  { didSet { persist() } }
+    @Published var clockInReminderHour: Int = 9       { didSet { persist() } }
+    @Published var clockInReminderMinute: Int = 0     { didSet { persist() } }
+    @Published var clockOutReminderHour: Int = 17     { didSet { persist() } }
+    @Published var clockOutReminderMinute: Int = 0    { didSet { persist() } }
 
     // Personal info
     @Published var email: String = ""      { didSet { persist() } }
@@ -115,6 +123,11 @@ class AppSettings: ObservableObject {
         var missedDayReminderHour: Int?
         var missedDayReminderMinute: Int?
         var use24HourClock: Bool?
+        var workFromHomeEnabled: Bool?
+        var clockInReminderHour: Int?
+        var clockInReminderMinute: Int?
+        var clockOutReminderHour: Int?
+        var clockOutReminderMinute: Int?
     }
 
     init() {
@@ -143,6 +156,11 @@ class AppSettings: ObservableObject {
         missedDayReminderHour   = s.missedDayReminderHour   ?? 18
         missedDayReminderMinute = s.missedDayReminderMinute ?? 0
         use24HourClock          = s.use24HourClock ?? false
+        workFromHomeEnabled     = s.workFromHomeEnabled ?? false
+        clockInReminderHour     = s.clockInReminderHour     ?? 9
+        clockInReminderMinute   = s.clockInReminderMinute   ?? 0
+        clockOutReminderHour    = s.clockOutReminderHour    ?? 17
+        clockOutReminderMinute  = s.clockOutReminderMinute  ?? 0
     }
 
     private func persist() {
@@ -165,7 +183,12 @@ class AppSettings: ObservableObject {
             geofenceRadius: geofenceRadius,
             missedDayReminderHour: missedDayReminderHour,
             missedDayReminderMinute: missedDayReminderMinute,
-            use24HourClock: use24HourClock
+            use24HourClock: use24HourClock,
+            workFromHomeEnabled: workFromHomeEnabled,
+            clockInReminderHour: clockInReminderHour,
+            clockInReminderMinute: clockInReminderMinute,
+            clockOutReminderHour: clockOutReminderHour,
+            clockOutReminderMinute: clockOutReminderMinute
         )
         UserDefaults.standard.set(try? JSONEncoder().encode(s), forKey: key)
     }
@@ -197,6 +220,28 @@ class AppSettings: ObservableObject {
             let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
             missedDayReminderHour   = comps.hour ?? 18
             missedDayReminderMinute = comps.minute ?? 0
+        }
+    }
+
+    var clockInReminderTime: Date {
+        get {
+            Calendar.current.date(bySettingHour: clockInReminderHour, minute: clockInReminderMinute, second: 0, of: Date()) ?? Date()
+        }
+        set {
+            let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+            clockInReminderHour   = comps.hour ?? 9
+            clockInReminderMinute = comps.minute ?? 0
+        }
+    }
+
+    var clockOutReminderTime: Date {
+        get {
+            Calendar.current.date(bySettingHour: clockOutReminderHour, minute: clockOutReminderMinute, second: 0, of: Date()) ?? Date()
+        }
+        set {
+            let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+            clockOutReminderHour   = comps.hour ?? 17
+            clockOutReminderMinute = comps.minute ?? 0
         }
     }
 }

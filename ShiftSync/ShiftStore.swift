@@ -151,6 +151,7 @@ class ShiftStore: ObservableObject {
         // clock-in is just as valid a signal as a geofence arrival that they're at work.
         LocationManager.shared.markWorkedToday()
         LocationManager.shared.cancelDailyAbsenceCheck()
+        LocationManager.shared.scheduleWorkFromHomeReminders()
         fireClockNotification(title: "Clocked In ✓", body: "Your shift has started.")
     }
 
@@ -174,6 +175,7 @@ class ShiftStore: ObservableObject {
                 WatchSessionManager.shared.sendStateUpdate()
                 LocationManager.shared.markWorkedToday()
                 LocationManager.shared.scheduleDailyAbsenceCheck()
+                LocationManager.shared.scheduleWorkFromHomeReminders()
                 fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
                 return
             }
@@ -188,6 +190,7 @@ class ShiftStore: ObservableObject {
         WatchSessionManager.shared.sendStateUpdate()
         LocationManager.shared.markWorkedToday()
         LocationManager.shared.scheduleDailyAbsenceCheck()
+        LocationManager.shared.scheduleWorkFromHomeReminders()
         fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
     }
 
