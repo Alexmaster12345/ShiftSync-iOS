@@ -181,12 +181,12 @@ class LocationManager: NSObject, ObservableObject {
         cancelDailyAbsenceCheck()
         guard AppSettings.shared.locationAlertsEnabled,
               AppSettings.shared.hasWorkplaceCoordinates,
-              !AppSettings.shared.workDays.isEmpty else { return }
+              !AppSettings.shared.officeDays.isEmpty else { return }
 
         let workedToday  = hasWorkedToday()
         let todayWeekday = Calendar.current.component(.weekday, from: Date())
 
-        for weekday in AppSettings.shared.workDays {
+        for weekday in AppSettings.shared.officeDays {
             if workedToday && weekday == todayWeekday { continue }
             var comps = DateComponents()
             comps.weekday = weekday
@@ -216,13 +216,13 @@ class LocationManager: NSObject, ObservableObject {
     /// if already worked today, same reasoning as scheduleDailyAbsenceCheck().
     func scheduleWorkFromHomeReminders() {
         cancelWorkFromHomeReminders()
-        guard AppSettings.shared.workFromHomeEnabled, !AppSettings.shared.workDays.isEmpty else { return }
+        guard AppSettings.shared.workFromHomeEnabled, !AppSettings.shared.homeDays.isEmpty else { return }
 
         let workedToday        = hasWorkedToday()
         let isClockedIn         = ShiftStore.shared.activeShiftStart != nil
         let todayWeekday        = Calendar.current.component(.weekday, from: Date())
 
-        for weekday in AppSettings.shared.workDays {
+        for weekday in AppSettings.shared.homeDays {
             let isToday = weekday == todayWeekday
 
             // Skip today's clock-in reminder if already worked today.
@@ -295,7 +295,7 @@ class LocationManager: NSObject, ObservableObject {
         for _ in 0..<7 {
             guard let next = cal.date(byAdding: .day, value: 1, to: day) else { return }
             day = next
-            if AppSettings.shared.workDays.contains(cal.component(.weekday, from: day)) { break }
+            if AppSettings.shared.officeDays.contains(cal.component(.weekday, from: day)) { break }
         }
         guard let nextReminderTime = cal.date(bySettingHour: AppSettings.shared.missedDayReminderHour,
                                               minute: AppSettings.shared.missedDayReminderMinute,

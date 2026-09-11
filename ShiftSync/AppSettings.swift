@@ -62,8 +62,11 @@ class AppSettings: ObservableObject {
     @Published var workplaceLatitude: Double = 0       { didSet { persist() } }
     @Published var workplaceLongitude: Double = 0      { didSet { persist() } }
     @Published var locationAlertsEnabled: Bool = false { didSet { persist() } }
-    // Calendar weekday numbers: 1 = Sunday ... 7 = Saturday. Defaults to Mon–Fri.
-    @Published var workDays: Set<Int> = [2, 3, 4, 5, 6] { didSet { persist() } }
+    // Calendar weekday numbers: 1 = Sunday ... 7 = Saturday. Each day is assigned to at
+    // most one of these two sets (Office = geofence-based alerts, Home = Work From Home
+    // scheduled reminders) — a day can also belong to neither. Defaults to Mon–Fri Office.
+    @Published var officeDays: Set<Int> = [2, 3, 4, 5, 6] { didSet { persist() } }
+    @Published var homeDays: Set<Int> = [] { didSet { persist() } }
     // Geofence radius in meters. Below ~30m, GPS accuracy makes region monitoring
     // unreliable — Apple recommends 100m+, but 75 is the pre-existing default here.
     @Published var geofenceRadius: Double = 75 { didSet { persist() } }
@@ -119,6 +122,8 @@ class AppSettings: ObservableObject {
         var weeklyOvertimeHours: Double?
         var overtimeMultiplier: Double?
         var workDays: [Int]?
+        var officeDays: [Int]?
+        var homeDays: [Int]?
         var geofenceRadius: Double?
         var missedDayReminderHour: Int?
         var missedDayReminderMinute: Int?
@@ -151,7 +156,15 @@ class AppSettings: ObservableObject {
         dailyOvertimeHours    = s.dailyOvertimeHours   ?? 8.0
         weeklyOvertimeHours   = s.weeklyOvertimeHours  ?? 40.0
         overtimeMultiplier    = s.overtimeMultiplier   ?? 1.5
-        workDays              = Set(s.workDays ?? [2, 3, 4, 5, 6])
+        if let off = s.officeDays, let home = s.homeDays {
+            officeDays = Set(off)
+            homeDays   = Set(home)
+        } else {
+            // Migrating from the old single shared workDays set: everything that was
+            // selected before becomes Office (its prior real behavior), Home starts empty.
+            officeDays = Set(s.workDays ?? [2, 3, 4, 5, 6])
+            homeDays   = []
+        }
         geofenceRadius        = s.geofenceRadius ?? 75
         missedDayReminderHour   = s.missedDayReminderHour   ?? 18
         missedDayReminderMinute = s.missedDayReminderMinute ?? 0
@@ -179,7 +192,9 @@ class AppSettings: ObservableObject {
             dailyOvertimeHours: dailyOvertimeHours,
             weeklyOvertimeHours: weeklyOvertimeHours,
             overtimeMultiplier: overtimeMultiplier,
-            workDays: Array(workDays),
+            workDays: nil,
+            officeDays: Array(officeDays),
+            homeDays: Array(homeDays),
             geofenceRadius: geofenceRadius,
             missedDayReminderHour: missedDayReminderHour,
             missedDayReminderMinute: missedDayReminderMinute,
@@ -203,12 +218,14 @@ class AppSettings: ObservableObject {
     // Calendar weekday order: index 0 = weekday 1 (Sunday) ... index 6 = weekday 7 (Saturday)
     static let weekdaySymbolsShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-    var workDaysLabel: String {
-        if workDays.isEmpty { return "No days selected" }
-        if workDays.count == 7 { return "Every day" }
-        if workDays == [2, 3, 4, 5, 6] { return "Weekdays (Mon–Fri)" }
-        return workDays.sorted().map { Self.weekdaySymbolsShort[$0 - 1] }.joined(separator: ", ")
+    static func daysLabel(_ days: Set<Int>) -> String {
+        if days.isEmpty { return "No days selected" }
+        if days.count == 7 { return "Every day" }
+        if days == [2, 3, 4, 5, 6] { return "Weekdays (Mon–Fri)" }
+        return days.sorted().map { weekdaySymbolsShort[$0 - 1] }.joined(separator: ", ")
     }
+    var officeDaysLabel: String { Self.daysLabel(officeDays) }
+    var homeDaysLabel: String { Self.daysLabel(homeDays) }
 
     // Bindable Date wrapper around missedDayReminderHour/Minute for use with DatePicker —
     // only the time-of-day components matter, the date portion is ignored.

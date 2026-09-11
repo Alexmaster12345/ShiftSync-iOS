@@ -781,7 +781,7 @@ struct NotificationPrefsView: View {
                         }
                         .padding(.horizontal, 16).padding(.vertical, 12)
 
-                        Text("Doesn't need a workplace location — reminders fire at these times on the Work Days you select below, no geofencing required.")
+                        Text("Doesn't need a workplace location — reminders fire at these times on your Home days below, no geofencing required.")
                             .font(.system(size: 11))
                             .foregroundColor(.ssTextMuted)
                             .padding(.horizontal, 16).padding(.bottom, 14)
@@ -791,7 +791,7 @@ struct NotificationPrefsView: View {
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                // Work Days
+                // Work Schedule (per-day Office / Home / Off)
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 12) {
                         ZStack {
@@ -799,8 +799,8 @@ struct NotificationPrefsView: View {
                             Image(systemName: "calendar.badge.checkmark").font(.system(size: 14)).foregroundColor(.tealAccent)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Work Days").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                            Text(settings.workDaysLabel).font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                            Text("Work Schedule").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Tap a day to cycle Office → Home → Off").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
                         }
                         Spacer()
                     }
@@ -810,6 +810,19 @@ struct NotificationPrefsView: View {
                         ForEach(1...7, id: \.self) { weekday in
                             dayChip(weekday: weekday)
                         }
+                    }
+                    .padding(.horizontal, 16).padding(.bottom, 10)
+
+                    HStack(spacing: 16) {
+                        legendDot(color: .shiftBlue, label: "Office")
+                        legendDot(color: .tealAccent, label: "Home")
+                        legendDot(color: .darkBg, label: "Off", bordered: true)
+                    }
+                    .padding(.horizontal, 16).padding(.bottom, 10)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Office: \(settings.officeDaysLabel)").font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                        Text("Home: \(settings.homeDaysLabel)").font(.system(size: 11)).foregroundColor(.ssTextSecondary)
                     }
                     .padding(.horizontal, 16).padding(.bottom, 14)
 
@@ -829,7 +842,7 @@ struct NotificationPrefsView: View {
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
 
-                    Text("\"Didn't make it to work today?\" fires at the time above, only on the days you select here.")
+                    Text("\"Didn't make it to work today?\" fires at the time above, only on your Office days above.")
                         .font(.system(size: 11))
                         .foregroundColor(.ssTextMuted)
                         .padding(.horizontal, 16).padding(.bottom, 14)
@@ -891,23 +904,67 @@ struct NotificationPrefsView: View {
         )
     }
 
+    private enum DayAssignment { case office, home, off }
+
+    private func assignment(for weekday: Int) -> DayAssignment {
+        if settings.officeDays.contains(weekday) { return .office }
+        if settings.homeDays.contains(weekday) { return .home }
+        return .off
+    }
+
+    // Tapping a day cycles it Off → Office → Home → Off, so each weekday belongs to
+    // at most one schedule (avoids firing both a geofence alert and a WFH reminder
+    // on the same day).
+    private func cycleDay(_ weekday: Int) {
+        switch assignment(for: weekday) {
+        case .off:
+            settings.officeDays.insert(weekday)
+        case .office:
+            settings.officeDays.remove(weekday)
+            settings.homeDays.insert(weekday)
+        case .home:
+            settings.homeDays.remove(weekday)
+        }
+        locationManager.scheduleDailyAbsenceCheck()
+        locationManager.scheduleWorkFromHomeReminders()
+    }
+
     private func dayChip(weekday: Int) -> some View {
-        let isOn = settings.workDays.contains(weekday)
-        return Button(action: {
-            if isOn { settings.workDays.remove(weekday) } else { settings.workDays.insert(weekday) }
-            locationManager.scheduleDailyAbsenceCheck()
-            locationManager.scheduleWorkFromHomeReminders()
-        }) {
+        let state = assignment(for: weekday)
+        let bg: Color = {
+            switch state {
+            case .office: return .shiftBlue
+            case .home:   return .tealAccent
+            case .off:    return .darkBg
+            }
+        }()
+        let label: String = {
+            switch state {
+            case .office: return "Office"
+            case .home:   return "Home"
+            case .off:    return "Off"
+            }
+        }()
+        return Button(action: { cycleDay(weekday) }) {
             Text(AppSettings.weekdaySymbolsShort[weekday - 1].prefix(1))
                 .font(.system(size: 13, weight: .bold))
-                .foregroundColor(isOn ? .white : .ssTextMuted)
+                .foregroundColor(state == .off ? .ssTextMuted : .white)
                 .frame(width: 34, height: 34)
-                .background(isOn ? Color.tealAccent : Color.darkBg)
+                .background(bg)
                 .clipShape(Circle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(AppSettings.weekdaySymbolsShort[weekday - 1])
-        .accessibilityAddTraits(isOn ? [.isSelected] : [])
+        .accessibilityLabel("\(AppSettings.weekdaySymbolsShort[weekday - 1]): \(label)")
+    }
+
+    private func legendDot(color: Color, label: String, bordered: Bool = false) -> some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 10, height: 10)
+                .overlay(Circle().stroke(Color.ssTextMuted.opacity(bordered ? 0.6 : 0), lineWidth: 1))
+            Text(label).font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+        }
     }
 }
 
