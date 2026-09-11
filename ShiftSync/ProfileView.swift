@@ -800,7 +800,8 @@ struct NotificationPrefsView: View {
                         }
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Work Schedule").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                            Text("Tap a day to cycle Office → Home → Off").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                            Text(settings.workFromHomeEnabled ? "Tap a day to cycle Office → Home → Off" : "Tap a day to cycle Office → Off")
+                                .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
                         }
                         Spacer()
                     }
@@ -815,10 +816,18 @@ struct NotificationPrefsView: View {
 
                     HStack(spacing: 16) {
                         legendDot(color: .shiftBlue, label: "Office")
-                        legendDot(color: .tealAccent, label: "Home")
+                        legendDot(color: .greenAccent, label: "Home")
                         legendDot(color: .darkBg, label: "Off", bordered: true)
                     }
-                    .padding(.horizontal, 16).padding(.bottom, 10)
+                    .padding(.horizontal, 16).padding(.bottom, 4)
+
+                    if !settings.workFromHomeEnabled {
+                        Text("Turn on Work From Home above to assign days as Home.")
+                            .font(.system(size: 11))
+                            .foregroundColor(.ssTextMuted)
+                            .padding(.horizontal, 16).padding(.bottom, 6)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Office: \(settings.officeDaysLabel)").font(.system(size: 11)).foregroundColor(.ssTextSecondary)
@@ -914,14 +923,17 @@ struct NotificationPrefsView: View {
 
     // Tapping a day cycles it Off → Office → Home → Off, so each weekday belongs to
     // at most one schedule (avoids firing both a geofence alert and a WFH reminder
-    // on the same day).
+    // on the same day). The Home state is only reachable while Work From Home is
+    // enabled — no point assigning days to a feature that's off.
     private func cycleDay(_ weekday: Int) {
         switch assignment(for: weekday) {
         case .off:
             settings.officeDays.insert(weekday)
         case .office:
             settings.officeDays.remove(weekday)
-            settings.homeDays.insert(weekday)
+            if settings.workFromHomeEnabled {
+                settings.homeDays.insert(weekday)
+            }
         case .home:
             settings.homeDays.remove(weekday)
         }
@@ -934,7 +946,7 @@ struct NotificationPrefsView: View {
         let bg: Color = {
             switch state {
             case .office: return .shiftBlue
-            case .home:   return .tealAccent
+            case .home:   return .greenAccent
             case .off:    return .darkBg
             }
         }()
