@@ -18,14 +18,21 @@ A shift tracking app for iOS and Apple Watch built with SwiftUI.
 - **Calendar View** — Monthly calendar showing days with logged shifts
 - **Export Reports** — Export shift data by period (weekly, monthly, custom)
 - **Workplace Geofencing** — Location-based arrival/departure notifications, including a prompt when you're *already* inside the workplace zone at the time you enable alerts
+- **Work From Home Reminders** — No office to detect? Set fixed Clock In / Clock Out times and get reminded on your Home days instead of relying on geofencing
+- **Per-Day Work Schedule** — Assign each weekday to Office (blue, geofence-based), Home (green, Work From Home reminders), or Off with a tap — the two notification systems never fire on the same day
 - **Apple Watch App** — Clock in/out from your wrist with instant on-watch confirmation notifications, plus built-in notification permission checker and test button
 - **Clock In/Out Notifications** — Every clock in/out fires an instant local notification ("Clocked In ✓" / "Clocked Out ✓"). watchOS mirrors these to a paired Apple Watch automatically — no Watch app installation required
-- **Notifications** — Missed shift prompts with quick day-type logging
-- **Dark Mode** — Full dark/light theme support
+- **Notifications** — Missed shift prompts (with quick day-type logging) and Work From Home clock in/out reminders, both with a configurable time and self-aware of days you've already worked so they don't fire needlessly
+- **Dark Mode & Time Format** — Full dark/light/system theme support, plus an independent 12-hour/24-hour toggle for how the app displays shift times
 - **Backup & Restore** — Export all shift records to a JSON file and re-import them on another device (Profile → Security & Privacy)
+- **In-App Guide** — "How to Use ShiftSync" walkthrough in Profile → Help covering every feature
 
 ## Recent Improvements
 
+- **Per-day Office/Home Work Schedule** — Replaced the single shared "Work Days" set with independent per-day assignment, so geofence-based Office alerts and Work From Home reminders can run on different days without double-firing.
+- **Work From Home reminders** — New scheduled Clock In/Out notifications for users without a workplace to geofence, with configurable times and the same "already worked today" awareness as the missed-day check.
+- **Notification reliability fixes** — Fixed a duplicate "clock out" notification (missing cooldown + missing "already clocked out" guard) and a false-positive "didn't make it to work today" alert that could fire even after a shift was logged.
+- **Unified time formatting** — Added a 12-hour/24-hour toggle in Appearance so the app's own displayed times (Home, Calendar, Export) match your preference, independent of the device's native picker format.
 - **Reliable custom tab bar** — Rebuilt using `.safeAreaInset(edge: .bottom)` so every tab button reliably receives taps. The previous `ZStack` overlay let the underlying `ScrollView` win the hit-test race in the overlapping region, causing tabs (other than Home / the +) to occasionally not respond.
 - **"Already at work" arrival detection** — `LocationManager` now calls `requestState(for:)` right after starting to monitor and handles `didDetermineState`, so the arrival prompt fires even when you enable location alerts (or set your workplace) while already inside the geofence.
 - **Watch clock-in/out feedback** — Watch clock actions now use `sendMessage(..., replyHandler:, errorHandler:)` and fire a local notification on the watch confirming success ("Clocked In ✓") or a clear failure reason if the iPhone can't be reached. The phone implements the reply-based `didReceiveMessage` variant so replies never time out.
@@ -73,9 +80,13 @@ Optimized for all iPhone sizes:
 | Overtime Rules | Toggle + daily threshold and multiplier (e.g. 1.5×) |
 | Vacation Days | Annual allowance with used/remaining tracking |
 | Workplace Location | Address used for geofence arrival/departure alerts |
-| Notifications | Toggle for arrival/departure geofence alerts |
+| Arrival & Departure Alerts | Toggle for geofence-based Office notifications |
+| Work From Home | Toggle + Clock In/Out reminder times for days without a workplace to geofence |
+| Work Schedule | Per-day Office / Home / Off assignment, driving which notification system fires on each weekday |
+| Appearance | Theme (Dark/Light/System) and 12-hour/24-hour time format |
 | Legal | Terms of Use and Privacy Policy, viewable in-app |
 | Data Backup | Export/Import shift records as JSON (Security & Privacy) |
+| How to Use | In-app feature walkthrough (Profile → Help) |
 
 ## Built With
 
