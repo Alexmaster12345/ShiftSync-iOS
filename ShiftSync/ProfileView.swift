@@ -807,17 +807,18 @@ struct NotificationPrefsView: View {
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: 0) {
                         ForEach(1...7, id: \.self) { weekday in
                             dayChip(weekday: weekday)
+                                .frame(maxWidth: .infinity)
                         }
                     }
                     .padding(.horizontal, 16).padding(.bottom, 10)
 
-                    HStack(spacing: 16) {
-                        legendDot(color: .shiftBlue, label: "Office")
-                        legendDot(color: .greenAccent, label: "Home")
-                        legendDot(color: .darkBg, label: "Off", bordered: true)
+                    HStack(spacing: 0) {
+                        legendDot(color: .shiftBlue, label: "Office").frame(maxWidth: .infinity)
+                        legendDot(color: .greenAccent, label: "Home").frame(maxWidth: .infinity)
+                        legendDot(color: .darkBg, label: "Off", bordered: true).frame(maxWidth: .infinity)
                     }
                     .padding(.horizontal, 16).padding(.bottom, 4)
 
