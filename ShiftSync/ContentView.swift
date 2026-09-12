@@ -205,10 +205,9 @@ struct MainTabView: View {
             // + button inside the bar
             Button(action: { showAddSheet = true }) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(Color.shiftBlue)
                         .frame(width: 38, height: 38)
-                        .rotationEffect(.degrees(45))
                         .shadow(color: Color.shiftBlue.opacity(0.45), radius: 10, x: 0, y: 4)
                     Image(systemName: "plus")
                         .font(.system(size: 18, weight: .bold))
