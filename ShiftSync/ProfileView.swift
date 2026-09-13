@@ -1298,6 +1298,7 @@ struct SalarySettingsView: View {
                                 ForEach(PaymentType.allCases, id: \.self) { t in Text(t.rawValue).tag(t) }
                             }
                             .pickerStyle(.menu).tint(.shiftBlue)
+                            .font(.system(size: 15, weight: .semibold))
                         }
 
                         Divider().frame(height: 74).background(Color.darkBg)
@@ -1335,7 +1336,7 @@ struct SalarySettingsView: View {
                                 .accessibilityLabel("Decrease work day hours")
                                 let h = settings.workDayHours
                                 Text(h == h.rounded() ? "\(Int(h))h" : String(format: "%.1fh", h))
-                                    .font(.system(size: 15, weight: .bold)).foregroundColor(.ssTextPrimary)
+                                    .font(.system(size: 15, weight: .semibold)).foregroundColor(.ssTextPrimary)
                                 Button(action: { if settings.workDayHours < 24 { settings.workDayHours = min(24, settings.workDayHours + 0.5) } }) {
                                     Image(systemName: "plus.circle.fill").font(.system(size: 18)).foregroundColor(.tealAccent)
                                 }
