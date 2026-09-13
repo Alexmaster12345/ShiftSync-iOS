@@ -29,6 +29,10 @@ A shift tracking app for iOS and Apple Watch built with SwiftUI.
 
 ## Recent Improvements
 
+- **New brand icon** — Replaced the literal analog-clock app icon with the official brand mark (a blue 270° "sync arrow" ring + center clock hand on white), rendered at full 1024×1024 resolution from the brand identity spec, for both the iPhone and Watch app.
+- **Real bundle identifier** — Fixed a placeholder `com0.ShiftSync` bundle ID (and the Watch app's matching `WKCompanionAppBundleIdentifier`) left over from project creation, ahead of first App Store submission.
+- **Pay Rate redesigned as 3 columns** — Salary & Currency's Payment Type / Hourly Rate / Work Day Hours moved from 3 stacked rows to 3 side-by-side columns, with consistent font sizing across all three.
+- **App Store submission prep** — Drafted listing copy (description, keywords, subtitle) and a full screenshot set in `APP_STORE_SUBMISSION.md` / `AppStoreScreenshots/`, ready for App Store Connect.
 - **Per-day Office/Home Work Schedule** — Replaced the single shared "Work Days" set with independent per-day assignment, so geofence-based Office alerts and Work From Home reminders can run on different days without double-firing.
 - **Work From Home reminders** — New scheduled Clock In/Out notifications for users without a workplace to geofence, with configurable times and the same "already worked today" awareness as the missed-day check.
 - **Notification reliability fixes** — Fixed a duplicate "clock out" notification (missing cooldown + missing "already clocked out" guard) and a false-positive "didn't make it to work today" alert that could fire even after a shift was logged.
