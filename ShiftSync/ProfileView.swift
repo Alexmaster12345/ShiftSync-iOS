@@ -1375,6 +1375,9 @@ struct SalarySettingsView: View {
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+        // The decimal pad has no Return/Done key, so tapping anywhere outside the
+        // rate field is the only way to dismiss it.
+        .onTapGesture { rateFocused = false }
     }
 
     private var rateString: String {
