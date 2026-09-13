@@ -1288,41 +1288,28 @@ struct SalarySettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
 
-                // Payment type, Rate, Work Day Hours
+                // Payment type, Rate, Work Day Hours — 3 side-by-side columns
                 VStack(alignment: .leading, spacing: 0) {
                     Text("PAY RATE").font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary)
                         .kerning(1).padding(.horizontal, 4).padding(.bottom, 8)
-                    VStack(spacing: 0) {
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "calendar.badge.clock").font(.system(size: 15)).foregroundColor(.shiftBlue)
-                            }
-                            Text("Payment Type").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                            Spacer()
+                    HStack(alignment: .top, spacing: 0) {
+                        payRateColumn(icon: "calendar.badge.clock", iconColor: .shiftBlue, label: "Type") {
                             Picker("", selection: $settings.paymentType) {
                                 ForEach(PaymentType.allCases, id: \.self) { t in Text(t.rawValue).tag(t) }
                             }
                             .pickerStyle(.menu).tint(.shiftBlue)
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 12)
 
-                        Divider().background(Color.darkBg)
+                        Divider().frame(height: 74).background(Color.darkBg)
 
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.greenAccent.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "banknote").font(.system(size: 15)).foregroundColor(.greenAccent)
-                            }
-                            Text(settings.rateLabel).font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                            Spacer()
+                        payRateColumn(icon: "banknote", iconColor: .greenAccent, label: settings.rateLabel) {
                             HStack(spacing: 4) {
                                 Text(settings.currency.symbol)
                                     .font(.system(size: 15, weight: .semibold)).foregroundColor(.shiftBlue)
                                 TextField("0", text: $rateText)
                                     .keyboardType(.decimalPad)
                                     .font(.system(size: 15, weight: .semibold)).foregroundColor(.shiftBlue)
-                                    .multilineTextAlignment(.trailing)
+                                    .multilineTextAlignment(.leading)
                                     .fixedSize()
                                     .focused($rateFocused)
                                     .onAppear { rateText = rateString }
@@ -1336,39 +1323,27 @@ struct SalarySettingsView: View {
                                     .onChange(of: rateText) { applyRate() }
                             }
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 12)
 
-                        Divider().background(Color.darkBg)
+                        Divider().frame(height: 74).background(Color.darkBg)
 
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "clock.fill").font(.system(size: 15)).foregroundColor(.tealAccent)
-                            }
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Work Day Hours").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                                Text("Used for day-off pay calculation")
-                                    .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
-                            }
-                            Spacer()
-                            HStack(spacing: 12) {
+                        payRateColumn(icon: "clock.fill", iconColor: .tealAccent, label: "Work Hours") {
+                            HStack(spacing: 6) {
                                 Button(action: { if settings.workDayHours > 1 { settings.workDayHours = max(1, settings.workDayHours - 0.5) } }) {
-                                    Image(systemName: "minus.circle.fill").font(.system(size: 22))
+                                    Image(systemName: "minus.circle.fill").font(.system(size: 18))
                                         .foregroundColor(settings.workDayHours > 1 ? .tealAccent : .ssTextMuted)
                                 }
                                 .accessibilityLabel("Decrease work day hours")
                                 let h = settings.workDayHours
                                 Text(h == h.rounded() ? "\(Int(h))h" : String(format: "%.1fh", h))
-                                    .font(.system(size: 16, weight: .bold)).foregroundColor(.ssTextPrimary)
-                                    .frame(width: 38, alignment: .center)
+                                    .font(.system(size: 15, weight: .bold)).foregroundColor(.ssTextPrimary)
                                 Button(action: { if settings.workDayHours < 24 { settings.workDayHours = min(24, settings.workDayHours + 0.5) } }) {
-                                    Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.tealAccent)
+                                    Image(systemName: "plus.circle.fill").font(.system(size: 18)).foregroundColor(.tealAccent)
                                 }
                                 .accessibilityLabel("Increase work day hours")
                             }
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 12)
                     }
+                    .padding(.vertical, 16)
                     .background(Color.darkCard)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
@@ -1398,6 +1373,20 @@ struct SalarySettingsView: View {
     private func applyRate() {
         guard let v = Double(rateText.replacingOccurrences(of: ",", with: ".")), v > 0 else { return }
         if settings.paymentType == .hourly { settings.hourlyRate = v } else { settings.monthlySalary = v }
+    }
+
+    private func payRateColumn<Content: View>(icon: String, iconColor: Color, label: String,
+                                               @ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 8) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8).fill(iconColor.opacity(0.15)).frame(width: 34, height: 34)
+                Image(systemName: icon).font(.system(size: 15)).foregroundColor(iconColor)
+            }
+            Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary)
+                .lineLimit(1).minimumScaleFactor(0.8)
+            content()
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func saveChanges() {
