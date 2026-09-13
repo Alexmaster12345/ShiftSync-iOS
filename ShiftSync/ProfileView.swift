@@ -1322,7 +1322,7 @@ struct SalarySettingsView: View {
                                 TextField("0", text: $rateText)
                                     .keyboardType(.decimalPad)
                                     .font(.system(size: 15, weight: .semibold)).foregroundColor(.shiftBlue)
-                                    .multilineTextAlignment(.trailing).frame(width: 80)
+                                    .multilineTextAlignment(.leading).frame(width: 80)
                                     .focused($rateFocused)
                                     .onAppear { rateText = rateString }
                                     .onChange(of: settings.paymentType) { rateText = rateString }
