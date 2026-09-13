@@ -1294,11 +1294,22 @@ struct SalarySettingsView: View {
                         .kerning(1).padding(.horizontal, 4).padding(.bottom, 8)
                     HStack(alignment: .top, spacing: 0) {
                         payRateColumn(icon: "calendar.badge.clock", iconColor: .shiftBlue, label: "Type") {
-                            Picker("", selection: $settings.paymentType) {
-                                ForEach(PaymentType.allCases, id: \.self) { t in Text(t.rawValue).tag(t) }
+                            Menu {
+                                ForEach(PaymentType.allCases, id: \.self) { t in
+                                    Button(t.rawValue) { settings.paymentType = t }
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text(settings.paymentType.rawValue)
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.system(size: 10, weight: .semibold))
+                                }
+                                // Picker's menu style doesn't reliably honor an outer .font()
+                                // modifier on its auto-generated label — a Menu with an explicit
+                                // Text gives exact control so this matches the other two columns.
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.shiftBlue)
                             }
-                            .pickerStyle(.menu).tint(.shiftBlue)
-                            .font(.system(size: 15, weight: .semibold))
                         }
 
                         Divider().frame(height: 74).background(Color.darkBg)
