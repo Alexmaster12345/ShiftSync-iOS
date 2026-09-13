@@ -45,3 +45,38 @@ Tracks the items needed to submit ShiftSync 1.0. Items marked `[x]` are done in 
 - Home Screen widgets (one-tap clock in/out, weekly earnings)
 
 Both require a new Widget Extension target and an App Group entitlement to share state with the main app — a real architectural change, not a quick edit. See README → Roadmap.
+
+## 8. App Store Listing Copy (paste into App Store Connect → App Information / Version Information)
+
+**Bundle ID:** `com.alexmaster12345.shiftsync` (Watch: `com.alexmaster12345.shiftsync.watchkitapp`) — not yet registered with Apple, safe to change before you create the App ID in the Developer Portal.
+
+**Subtitle** (30 chars max):
+> Shift tracking & pay calc
+
+**Promotional Text** (170 chars max, editable without a new build):
+> Clock in with one tap, get reminded when you arrive or leave work, and see your pay calculated live — all stored privately on your device.
+
+**Description:**
+> ShiftSync is a simple, private shift tracker for hourly and salaried workers. Clock in and out with one tap, and let ShiftSync calculate your pay automatically — including overtime.
+>
+> KEY FEATURES
+> • Clock In / Out — one-tap shift tracking, synced to Apple Watch
+> • Automatic Pay Calculation — hourly or monthly rate, with configurable overtime multiplier
+> • Workplace Alerts — optional geofence reminders when you arrive at or leave work, with one-tap clock in/out from the notification
+> • Work From Home Reminders — scheduled clock in/out reminders for remote days, no workplace location needed
+> • Per-Day Schedule — assign each weekday to Office or Home so the right reminders fire on the right days
+> • Day Types — log Vacation, Sick, Formation, Holiday, and Company Fun Day time off
+> • Calendar & Export — see every shift on a monthly calendar, and export CSV/PDF reports for any date range
+> • Backup & Restore — export your shift history to a file and restore it on a new device
+>
+> PRIVACY FIRST
+> ShiftSync has no account, no server, and no analytics. Every shift, pay setting, and workplace location you enter stays on your device. Nothing is ever transmitted anywhere unless you personally export a report.
+>
+> ShiftSync is a personal record-keeping tool and does not replace your employer's official timekeeping or payroll system.
+
+**Keywords** (100 chars max, comma-separated, no spaces after commas):
+> shift,timesheet,clock in,hourly,pay,overtime,timecard,work hours,punch clock,schedule
+
+**Category:** Productivity (primary), Business (secondary)
+
+**Support URL:** needed before submission — a GitHub Pages link (e.g. the repo's README) or a simple contact page works.
