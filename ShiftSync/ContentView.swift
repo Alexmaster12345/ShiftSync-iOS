@@ -227,6 +227,10 @@ struct MainTabView: View {
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(.ultraThinMaterial.opacity(0.55))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .fill(Color.white.opacity(0.2))
+                )
                 .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: -4)
         )
         .padding(.horizontal, 40)
