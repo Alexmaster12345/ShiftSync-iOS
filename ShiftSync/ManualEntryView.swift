@@ -529,9 +529,11 @@ struct EditShiftView: View {
     // MARK: - Date
 
     private var dateRow: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .center, spacing: 8) {
             Text("DATE").font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
-            Button(action: { showDatePicker = true }) {
+            Button(action: {
+                withAnimation { showDatePicker.toggle(); showStartTimePicker = false; showEndTimePicker = false }
+            }) {
                 HStack(spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
@@ -539,19 +541,27 @@ struct EditShiftView: View {
                     }
                     Text(dateLabel).font(.system(size: 16, weight: .bold)).foregroundColor(.ssTextPrimary)
                     Spacer()
-                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundColor(.ssTextMuted)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold)).foregroundColor(.ssTextMuted)
+                        .rotationEffect(.degrees(showDatePicker ? 90 : 0))
                 }
                 .padding(14)
-                .background(Color.darkCard)
+                .background(showDatePicker ? Color.shiftBlue.opacity(0.12) : Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             }
             .buttonStyle(.plain)
-            .popover(isPresented: $showDatePicker) {
+
+            // Expands inline inside the card instead of a .popover — this view is
+            // presented as a plain overlay rather than a real sheet/popover host, so
+            // .popover has no proper context to size against and blows up full-screen.
+            if showDatePicker {
                 DatePicker("", selection: $shiftDate, displayedComponents: .date)
                     .datePickerStyle(.graphical)
                     .labelsHidden()
-                    .padding()
-                    .frame(minWidth: 320)
+                    .frame(maxHeight: 320)
+                    .padding(8)
+                    .background(Color.darkCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             }
         }
     }
@@ -559,33 +569,49 @@ struct EditShiftView: View {
     // MARK: - Start / End time
 
     private var timeRow: some View {
-        HStack(spacing: 12) {
-            timeBox(label: "START", time: $startTime, showPicker: $showStartTimePicker)
-                .onChange(of: startTime) {
-                    if endTime <= startTime { endTime = startTime.addingTimeInterval(3600) }
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                timeBox(label: "START", time: startTime, isActive: showStartTimePicker) {
+                    withAnimation { showStartTimePicker.toggle(); showEndTimePicker = false; showDatePicker = false }
                 }
-            timeBox(label: "END", time: $endTime, showPicker: $showEndTimePicker)
+                timeBox(label: "END", time: endTime, isActive: showEndTimePicker) {
+                    withAnimation { showEndTimePicker.toggle(); showStartTimePicker = false; showDatePicker = false }
+                }
+            }
+
+            // Expands inline inside the card instead of a .popover — see dateRow's
+            // comment for why .popover isn't used here.
+            if showStartTimePicker {
+                DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
+                    .datePickerStyle(.wheel)
+                    .labelsHidden()
+                    .frame(height: 150)
+                    .clipped()
+                    .onChange(of: startTime) {
+                        if endTime <= startTime { endTime = startTime.addingTimeInterval(3600) }
+                    }
+            } else if showEndTimePicker {
+                DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
+                    .datePickerStyle(.wheel)
+                    .labelsHidden()
+                    .frame(height: 150)
+                    .clipped()
+            }
         }
     }
 
-    private func timeBox(label: String, time: Binding<Date>, showPicker: Binding<Bool>) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private func timeBox(label: String, time: Date, isActive: Bool, action: @escaping () -> Void) -> some View {
+        VStack(alignment: .center, spacing: 8) {
             Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
-            Button(action: { showPicker.wrappedValue = true }) {
-                Text(formatTime(time.wrappedValue))
+            Button(action: action) {
+                Text(formatTime(time))
                     .font(.system(size: 17, weight: .bold)).foregroundColor(.ssTextPrimary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(Color.darkCard)
+                    .background(isActive ? Color.shiftBlue.opacity(0.12) : Color.darkCard)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
             }
             .buttonStyle(.plain)
-            .popover(isPresented: showPicker) {
-                DatePicker("", selection: time, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                    .padding()
-            }
         }
         .frame(maxWidth: .infinity)
     }
