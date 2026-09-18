@@ -50,7 +50,7 @@ struct ProfileView: View {
 
                 // ── Work Rules ───────────────────────────────────────────
                 settingsSection(title: "WORK RULES") {
-                    navRow(icon: "clock.badge.exclamationmark.fill", label: "Overtime Rules", color: .orangeAccent, destination: AnyView(OvertimeRulesView()))
+                    navRow(icon: "clock.badge.exclamationmark.fill", label: "Overtime Rules", color: .orangeAccent, destination: AnyView(OvertimeRulesView(store: store)))
                     Divider().background(Color.darkBg)
                     navRow(icon: "square.and.arrow.up.fill", label: "Export Reports", color: .tealAccent, destination: AnyView(ExportView(store: store)))
                 }
@@ -1086,11 +1086,25 @@ struct AppearanceView: View {
 // MARK: - Overtime Rules View
 
 struct OvertimeRulesView: View {
+    @ObservedObject var store: ShiftStore
     @ObservedObject private var settings = AppSettings.shared
     @Environment(\.dismiss) private var dismiss
     @State private var saved = false
+    @State private var showApplyChangeDialog = false
+
+    // Snapshot of the rules that actually change past-shift math, captured when the screen
+    // opens, so "Save Changes" can detect whether anything worth prompting about changed.
+    @State private var initialOvertimeEnabled = AppSettings.shared.overtimeEnabled
+    @State private var initialDailyOvertimeHours = AppSettings.shared.dailyOvertimeHours
+    @State private var initialOvertimeMultiplier = AppSettings.shared.overtimeMultiplier
 
     private let multiplierOptions: [Double] = [1.25, 1.5, 2.0]
+
+    private var rulesChanged: Bool {
+        settings.overtimeEnabled != initialOvertimeEnabled ||
+        settings.dailyOvertimeHours != initialDailyOvertimeHours ||
+        settings.overtimeMultiplier != initialOvertimeMultiplier
+    }
 
     var body: some View {
         ScrollView {
@@ -1186,10 +1200,7 @@ struct OvertimeRulesView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
-                Button(action: {
-                    withAnimation { saved = true }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { saved = false }
-                }) {
+                Button(action: saveChanges) {
                     Text(saved ? "Saved!" : "Save Changes")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
@@ -1204,6 +1215,39 @@ struct OvertimeRulesView: View {
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+        .alert(
+            "Apply New Overtime Rules To Past Shifts?",
+            isPresented: $showApplyChangeDialog
+        ) {
+            Button("Apply to All Shifts") {
+                store.reapplyOvertimeRulesToExistingEntries()
+                confirmSaved()
+            }
+            Button("Only Future Shifts") {
+                store.freezePayForExistingEntries()
+                confirmSaved()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You changed the overtime threshold, multiplier, or toggle. Should already-logged shifts be recalculated with the new rules, or keep the pay they already had?")
+        }
+    }
+
+    private func saveChanges() {
+        let hasExistingShifts = store.entries.contains { !$0.shiftType.isDayType }
+        if rulesChanged && hasExistingShifts {
+            showApplyChangeDialog = true
+        } else {
+            confirmSaved()
+        }
+    }
+
+    private func confirmSaved() {
+        initialOvertimeEnabled = settings.overtimeEnabled
+        initialDailyOvertimeHours = settings.dailyOvertimeHours
+        initialOvertimeMultiplier = settings.overtimeMultiplier
+        withAnimation { saved = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { saved = false }
     }
 
     private func formattedHours(_ h: Double) -> String {

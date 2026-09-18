@@ -45,13 +45,18 @@ struct ShiftEntry: Codable, Identifiable {
     var startedAt: Date
     var durationMinutes: Int
     var unpaidBreakMinutes: Int
+    // When set, locks this entry's pay to a fixed amount instead of recomputing live from
+    // current settings — used when the user chooses to apply a new Overtime Rules change
+    // only to future shifts, so past entries keep the pay they had at that time.
+    var payOverride: Double?
 
-    init(id: UUID = UUID(), shiftType: ShiftType, startedAt: Date, durationMinutes: Int, unpaidBreakMinutes: Int) {
+    init(id: UUID = UUID(), shiftType: ShiftType, startedAt: Date, durationMinutes: Int, unpaidBreakMinutes: Int, payOverride: Double? = nil) {
         self.id = id
         self.shiftType = shiftType
         self.startedAt = startedAt
         self.durationMinutes = durationMinutes
         self.unpaidBreakMinutes = unpaidBreakMinutes
+        self.payOverride = payOverride
     }
 
     // Number of days a day-type entry (vacation/sick/etc.) represents. Normally 1, since
@@ -63,8 +68,10 @@ struct ShiftEntry: Codable, Identifiable {
         return max(1, Int(round(Double(durationMinutes) / minsPerDay)))
     }
 
-    // Always computed from current settings so rate changes apply instantly
+    // Computed live from current settings so rate changes apply instantly — unless
+    // payOverride locks it to a fixed amount (see payOverride's doc comment above).
     var estimatedPay: Double {
+        if let payOverride { return payOverride }
         let settings = AppSettings.shared
         if shiftType.isDayType {
             return Double(dayCount) * settings.dailyRate * shiftType.multiplier
@@ -192,6 +199,47 @@ class ShiftStore: ObservableObject {
         LocationManager.shared.scheduleDailyAbsenceCheck()
         LocationManager.shared.scheduleWorkFromHomeReminders()
         fireClockNotification(title: "Clocked Out ✓", body: "Your shift has ended. Nice work!")
+    }
+
+    // MARK: Overtime Rules Change
+
+    /// Locks every existing entry's pay to its current computed value, so a later change to
+    /// Overtime Rules (multiplier, threshold, or the toggle itself) only affects shifts logged
+    /// from this point forward. Called when the user picks "Only Future Shifts" in the
+    /// Overtime Rules apply-change prompt.
+    func freezePayForExistingEntries() {
+        for i in entries.indices where entries[i].payOverride == nil {
+            entries[i].payOverride = entries[i].estimatedPay
+        }
+        saveEntries()
+    }
+
+    /// Re-derives the regular/overtime split for every existing plain "Regular" entry using
+    /// the *current* Overtime Rules settings, and clears any previous pay lock so all entries
+    /// resume live-computing pay from current settings. Called when the user picks "Apply to
+    /// All Shifts" in the Overtime Rules apply-change prompt. Mirrors the same split clockOut()
+    /// performs on a live shift, just applied retroactively to already-logged entries.
+    func reapplyOvertimeRulesToExistingEntries() {
+        let settings = AppSettings.shared
+        let thresholdMins = Int(settings.dailyOvertimeHours * 60)
+        var result: [ShiftEntry] = []
+        for entry in entries {
+            var e = entry
+            e.payOverride = nil
+            guard settings.overtimeEnabled, e.shiftType == .regular, e.durationMinutes > thresholdMins else {
+                result.append(e)
+                continue
+            }
+            let regularEntry = ShiftEntry(shiftType: .regular, startedAt: e.startedAt,
+                                          durationMinutes: thresholdMins, unpaidBreakMinutes: 0)
+            let otStart = e.startedAt.addingTimeInterval(Double(thresholdMins) * 60)
+            let otEntry = ShiftEntry(shiftType: .overtime, startedAt: otStart,
+                                     durationMinutes: e.durationMinutes - thresholdMins, unpaidBreakMinutes: 0)
+            result.append(regularEntry)
+            result.append(otEntry)
+        }
+        entries = result
+        saveEntries()
     }
 
     // MARK: Notifications
