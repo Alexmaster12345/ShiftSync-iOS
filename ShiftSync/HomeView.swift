@@ -11,8 +11,6 @@ struct HomeView: View {
     @State private var dayOffShiftType: ShiftType = .vacation
     @State private var showNotifications = false
     @State private var entryToEdit: ShiftEntry? = nil
-    @State private var entryToDelete: ShiftEntry? = nil
-    @State private var actionEntry: ShiftEntry? = nil
     @ObservedObject private var alertLog = AlertLog.shared
     @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var locationManager = LocationManager.shared
@@ -146,30 +144,14 @@ struct HomeView: View {
         .sheet(isPresented: $showNotifications) {
             NotificationsView(isPresented: $showNotifications)
         }
-        .sheet(item: $entryToEdit) { entry in
-            EditShiftView(entry: entry, store: store, isPresented: Binding(
-                get: { entryToEdit != nil },
-                set: { if !$0 { entryToEdit = nil } }
-            ))
-        }
-        .confirmationDialog("Delete Shift?", isPresented: Binding(
-            get: { entryToDelete != nil }, set: { if !$0 { entryToDelete = nil } }
-        ), titleVisibility: .visible) {
-            Button("Delete", role: .destructive) {
-                if let e = entryToDelete { store.deleteEntry(id: e.id) }
-                entryToDelete = nil
+        .overlay {
+            if let entry = entryToEdit {
+                EditShiftView(entry: entry, store: store, isPresented: Binding(
+                    get: { entryToEdit != nil },
+                    set: { if !$0 { entryToEdit = nil } }
+                ))
+                .transition(.opacity)
             }
-            Button("Cancel", role: .cancel) { entryToDelete = nil }
-        } message: {
-            Text("This shift will be permanently removed.")
-        }
-        .confirmationDialog(actionEntry.map { shiftOptionsTitle(for: $0) } ?? "Shift Options", isPresented: Binding(
-            get: { actionEntry != nil }, set: { if !$0 { actionEntry = nil } }
-        ), titleVisibility: .visible) {
-            Button("Edit Shift") { entryToEdit = actionEntry; actionEntry = nil }
-            Button("Delete Shift", role: .destructive) { entryToDelete = actionEntry; actionEntry = nil }
-            Button("Add New Hours") { actionEntry = nil; showManualEntry = true }
-            Button("Cancel", role: .cancel) { actionEntry = nil }
         }
     }
 
@@ -523,7 +505,7 @@ struct HomeView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .shadow(color: Color.black.opacity(0.03), radius: 4, y: 2)
         .contentShape(Rectangle())
-        .onTapGesture { actionEntry = entry }
+        .onTapGesture { entryToEdit = entry }
     }
 
     // MARK: - Helpers
@@ -578,12 +560,6 @@ struct HomeView: View {
         case 17..<21: return "moon.stars.fill"
         default:      return "moon.fill"
         }
-    }
-
-    private func shiftOptionsTitle(for entry: ShiftEntry) -> String {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "EEE MMM d"
-        return "\(entry.shiftType.label) \(fmt.string(from: entry.startedAt))"
     }
 
     private func shiftOptionsSummary(for entry: ShiftEntry) -> String {

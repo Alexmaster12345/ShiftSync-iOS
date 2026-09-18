@@ -7,10 +7,7 @@ struct CalendarView: View {
     @State private var displayYear: Int
     @State private var selectedDay: Int
     @State private var entryToEdit: ShiftEntry? = nil
-    @State private var entryToDelete: ShiftEntry? = nil
-    @State private var actionEntry: ShiftEntry? = nil
     @State private var showManualEntry = false
-    @State private var showVacationEntry = false
 
     private static let monthNames = [
         "January","February","March","April","May","June",
@@ -131,7 +128,7 @@ struct CalendarView: View {
                 } else {
                     VStack(spacing: 10) {
                         ForEach(monthShifts) { entry in
-                            ScheduleShiftRow(entry: entry, onTap: { actionEntry = entry })
+                            ScheduleShiftRow(entry: entry, onTap: { entryToEdit = entry })
                         }
                     }
                 }
@@ -142,39 +139,17 @@ struct CalendarView: View {
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
-        .sheet(item: $entryToEdit) { entry in
-            EditShiftView(entry: entry, store: store, isPresented: Binding(
-                get: { entryToEdit != nil },
-                set: { if !$0 { entryToEdit = nil } }
-            ))
+        .overlay {
+            if let entry = entryToEdit {
+                EditShiftView(entry: entry, store: store, isPresented: Binding(
+                    get: { entryToEdit != nil },
+                    set: { if !$0 { entryToEdit = nil } }
+                ))
+                .transition(.opacity)
+            }
         }
         .sheet(isPresented: $showManualEntry) {
             ManualEntryView(store: store, isPresented: $showManualEntry)
-        }
-        .sheet(isPresented: $showVacationEntry) {
-            ManualEntryView(store: store, isPresented: $showVacationEntry, initialShiftType: .vacation)
-        }
-        .confirmationDialog("Delete Shift?", isPresented: Binding(
-            get: { entryToDelete != nil },
-            set: { if !$0 { entryToDelete = nil } }
-        ), titleVisibility: .visible) {
-            Button("Delete", role: .destructive) {
-                if let e = entryToDelete { store.deleteEntry(id: e.id) }
-                entryToDelete = nil
-            }
-            Button("Cancel", role: .cancel) { entryToDelete = nil }
-        } message: {
-            Text("This shift will be permanently removed.")
-        }
-        .confirmationDialog("Shift Options", isPresented: Binding(
-            get: { actionEntry != nil },
-            set: { if !$0 { actionEntry = nil } }
-        ), titleVisibility: .visible) {
-            Button("Edit Shift") { entryToEdit = actionEntry; actionEntry = nil }
-            Button("Delete Shift", role: .destructive) { entryToDelete = actionEntry; actionEntry = nil }
-            Button("Add New Hours") { actionEntry = nil; showManualEntry = true }
-            Button("Log Vacation Day") { actionEntry = nil; showVacationEntry = true }
-            Button("Cancel", role: .cancel) { actionEntry = nil }
         }
     }
 

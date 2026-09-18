@@ -420,6 +420,10 @@ struct EditShiftView: View {
     @State private var breakMinutes: Int
     @State private var shiftType: ShiftType
     @State private var vacationDays: Int
+    @State private var showDeleteConfirm = false
+    @State private var showDatePicker = false
+    @State private var showStartTimePicker = false
+    @State private var showEndTimePicker = false
 
     init(entry: ShiftEntry, store: ShiftStore, isPresented: Binding<Bool>) {
         self.entry = entry
@@ -443,152 +447,178 @@ struct EditShiftView: View {
 
     private var canSave: Bool { isDayType ? vacationDays > 0 : durationMinutes > 0 }
 
+    private var dateLabel: String {
+        let fmt = DateFormatter(); fmt.dateFormat = "MMMM d"
+        if Calendar.current.isDateInToday(shiftDate) { return "Today, \(fmt.string(from: shiftDate))" }
+        return fmt.string(from: shiftDate)
+    }
+
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    // Date picker
-                    HStack(spacing: 12) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
-                            Image(systemName: "calendar").font(.system(size: 14)).foregroundColor(.shiftBlue)
-                        }
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("DATE").font(.system(size: 10, weight: .semibold)).foregroundColor(.ssTextMuted).kerning(1)
-                            DatePicker("", selection: $shiftDate, displayedComponents: .date)
-                                .datePickerStyle(.compact).labelsHidden().tint(.shiftBlue)
-                        }
-                        Spacer()
-                    }
-                    .padding(14)
-                    .background(Color.darkCard)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+                .onTapGesture { isPresented = false }
 
-                    // Shift type
-                    VStack(spacing: 0) {
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "tag").font(.system(size: 14)).foregroundColor(.shiftBlue)
-                            }
-                            Text("Shift Type").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                            Spacer()
-                            Picker("", selection: $shiftType) {
-                                ForEach(ShiftType.allCases, id: \.self) { t in Text(t.label).tag(t) }
-                            }
-                            .pickerStyle(.menu).tint(.shiftBlue)
-                        }
-                        .padding(14)
-                    }
-                    .background(Color.darkCard)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            VStack(spacing: 16) {
+                header
 
-                    if isDayType {
-                        // Vacation days
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "sun.max.fill").font(.system(size: 14)).foregroundColor(.tealAccent)
-                            }
-                            Text("Days").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                            Spacer()
-                            HStack(spacing: 16) {
-                                Button(action: { if vacationDays > 1 { vacationDays -= 1 } }) {
-                                    Image(systemName: "minus.circle.fill").font(.system(size: 24))
-                                        .foregroundColor(vacationDays > 1 ? .shiftBlue : .ssTextMuted)
-                                }
-                                .accessibilityLabel("Decrease days")
-                                Text("\(vacationDays)").font(.system(size: 18, weight: .bold)).foregroundColor(.ssTextPrimary).frame(width: 28, alignment: .center)
-                                Button(action: { vacationDays += 1 }) {
-                                    Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundColor(.shiftBlue)
-                                }
-                                .accessibilityLabel("Increase days")
-                            }
-                        }
-                        .padding(14)
-                        .background(Color.darkCard)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                    } else {
-                        // Start / end time
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("SHIFT HOURS").font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
-                            HStack(spacing: 16) {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Start").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextSecondary)
-                                    DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
-                                        .datePickerStyle(.compact).labelsHidden().tint(.shiftBlue)
-                                        .onChange(of: startTime) {
-                                            if endTime <= startTime { endTime = startTime.addingTimeInterval(3600) }
-                                        }
-                                }
-                                Image(systemName: "arrow.right").foregroundColor(.ssTextMuted).font(.system(size: 14))
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("End").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextSecondary)
-                                    DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
-                                        .datePickerStyle(.compact).labelsHidden().tint(.shiftBlue)
-                                }
-                                Spacer()
-                            }
-                            if durationMinutes > 0 {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "clock").font(.system(size: 12)).foregroundColor(.shiftBlue)
-                                    Text("Duration: \(formatDuration(durationMinutes))").font(.system(size: 13, weight: .medium)).foregroundColor(.shiftBlue)
-                                }
-                            }
-                        }
-                        .padding(14)
-                        .background(Color.darkCard)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                dateRow
 
-                        // Break
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.orangeAccent.opacity(0.15)).frame(width: 34, height: 34)
-                                Image(systemName: "cup.and.saucer").font(.system(size: 14)).foregroundColor(.orangeAccent)
-                            }
-                            Text("Unpaid Break").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                            Spacer()
-                            HStack(spacing: 12) {
-                                Button(action: { if breakMinutes >= 15 { breakMinutes -= 15 } }) {
-                                    Image(systemName: "minus.circle.fill").font(.system(size: 24))
-                                        .foregroundColor(breakMinutes >= 15 ? .shiftBlue : .ssTextMuted)
-                                }
-                                .accessibilityLabel("Decrease unpaid break")
-                                Text("\(breakMinutes) min").font(.system(size: 14, weight: .semibold)).foregroundColor(.ssTextPrimary).frame(width: 60, alignment: .center)
-                                Button(action: { breakMinutes += 15 }) {
-                                    Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundColor(.shiftBlue)
-                                }
-                                .accessibilityLabel("Increase unpaid break")
-                            }
-                        }
-                        .padding(14)
-                        .background(Color.darkCard)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                    }
-
-                    Button(action: saveChanges) {
-                        Text("Save Changes")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity).frame(height: 52)
-                            .background(canSave ? Color.shiftBlue : Color.ssTextMuted)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
-                    }
-                    .disabled(!canSave)
-                    .padding(.bottom, 32)
+                if isDayType {
+                    daysRow
+                } else {
+                    timeRow
                 }
-                .padding(.horizontal, 16).padding(.top, 8)
+
+                Button(action: saveChanges) {
+                    Text("Save Changes")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity).frame(height: 54)
+                        .background(
+                            LinearGradient(colors: canSave ? [.shiftBlue, .shiftBlueDark] : [.ssTextMuted, .ssTextMuted],
+                                          startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+                .disabled(!canSave)
             }
-            .background(Color.darkBg.ignoresSafeArea())
-            .navigationTitle("Edit Shift")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { isPresented = false }.foregroundColor(.shiftBlue)
+            .padding(20)
+            .background(Color.darkCard)
+            .clipShape(RoundedRectangle(cornerRadius: 28))
+            .padding(.horizontal, 28)
+        }
+        .alert("Delete Shift?", isPresented: $showDeleteConfirm) {
+            Button("Delete", role: .destructive) {
+                store.deleteEntry(id: entry.id)
+                isPresented = false
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This shift record will be permanently deleted. This cannot be undone.")
+        }
+    }
+
+    // MARK: - Header
+
+    private var header: some View {
+        HStack {
+            Text("Edit Shift")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(.ssTextPrimary)
+            Spacer()
+            Button(action: { showDeleteConfirm = true }) {
+                ZStack {
+                    Circle().fill(Color.redAccent.opacity(0.15)).frame(width: 40, height: 40)
+                    Image(systemName: "trash.fill").font(.system(size: 15)).foregroundColor(.redAccent)
                 }
+            }
+            .accessibilityLabel("Delete Shift")
+
+            Button(action: { isPresented = false }) {
+                ZStack {
+                    Circle().fill(Color.ssTextMuted.opacity(0.15)).frame(width: 40, height: 40)
+                    Image(systemName: "xmark").font(.system(size: 15, weight: .semibold)).foregroundColor(.ssTextSecondary)
+                }
+            }
+            .accessibilityLabel("Close")
+        }
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - Date
+
+    private var dateRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("DATE").font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
+            Button(action: { showDatePicker = true }) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
+                        Image(systemName: "calendar").font(.system(size: 14)).foregroundColor(.shiftBlue)
+                    }
+                    Text(dateLabel).font(.system(size: 16, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundColor(.ssTextMuted)
+                }
+                .padding(14)
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+            .buttonStyle(.plain)
+            .popover(isPresented: $showDatePicker) {
+                DatePicker("", selection: $shiftDate, displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+                    .padding()
+                    .frame(minWidth: 320)
             }
         }
     }
+
+    // MARK: - Start / End time
+
+    private var timeRow: some View {
+        HStack(spacing: 12) {
+            timeBox(label: "START", time: $startTime, showPicker: $showStartTimePicker)
+                .onChange(of: startTime) {
+                    if endTime <= startTime { endTime = startTime.addingTimeInterval(3600) }
+                }
+            timeBox(label: "END", time: $endTime, showPicker: $showEndTimePicker)
+        }
+    }
+
+    private func timeBox(label: String, time: Binding<Date>, showPicker: Binding<Bool>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
+            Button(action: { showPicker.wrappedValue = true }) {
+                Text(formatTime(time.wrappedValue))
+                    .font(.system(size: 17, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.darkCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+            .buttonStyle(.plain)
+            .popover(isPresented: showPicker) {
+                DatePicker("", selection: time, displayedComponents: .hourAndMinute)
+                    .datePickerStyle(.wheel)
+                    .labelsHidden()
+                    .padding()
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Vacation-style days stepper
+
+    private var daysRow: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
+                Image(systemName: "sun.max.fill").font(.system(size: 14)).foregroundColor(.tealAccent)
+            }
+            Text("Days").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+            Spacer()
+            HStack(spacing: 16) {
+                Button(action: { if vacationDays > 1 { vacationDays -= 1 } }) {
+                    Image(systemName: "minus.circle.fill").font(.system(size: 24))
+                        .foregroundColor(vacationDays > 1 ? .shiftBlue : .ssTextMuted)
+                }
+                .accessibilityLabel("Decrease days")
+                Text("\(vacationDays)").font(.system(size: 18, weight: .bold)).foregroundColor(.ssTextPrimary).frame(width: 28, alignment: .center)
+                Button(action: { vacationDays += 1 }) {
+                    Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundColor(.shiftBlue)
+                }
+                .accessibilityLabel("Increase days")
+            }
+        }
+        .padding(14)
+        .background(Color.darkCard)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Save
 
     private func saveChanges() {
         guard canSave else { return }
