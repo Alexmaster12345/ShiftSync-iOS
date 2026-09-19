@@ -308,11 +308,13 @@ struct ScheduleShiftRow: View {
                     .font(.ss(10, weight: .bold))
                     .foregroundColor(rowAccentColor)
                     .kerning(0.5)
+                    .lineLimit(1)
                 Text(dayLabel)
                     .font(.ss(24, weight: .black))
                     .foregroundColor(rowAccentColor)
+                    .lineLimit(1)
             }
-            .frame(width: 42)
+            .frame(minWidth: 42)
 
             // Shift info
             VStack(alignment: .leading, spacing: 3) {

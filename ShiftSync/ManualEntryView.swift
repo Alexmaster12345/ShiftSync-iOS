@@ -340,7 +340,9 @@ struct ManualEntryView: View {
                     .accessibilityLabel("Decrease unpaid break")
                     Text("\(breakMinutes) min")
                         .font(.ss(14, weight: .semibold)).foregroundColor(.ssTextPrimary)
-                        .frame(width: 58, alignment: .center)
+                        .lineLimit(1)
+                        .fixedSize()
+                        .frame(minWidth: 58, alignment: .center)
                     Button(action: { breakMinutes += 15 }) {
                         Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.shiftBlue)
                     }
@@ -632,7 +634,8 @@ struct EditShiftView: View {
                         .foregroundColor(vacationDays > 1 ? .shiftBlue : .ssTextMuted)
                 }
                 .accessibilityLabel("Decrease days")
-                Text("\(vacationDays)").font(.ss(18, weight: .bold)).foregroundColor(.ssTextPrimary).frame(width: 28, alignment: .center)
+                Text("\(vacationDays)").font(.ss(18, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    .lineLimit(1).fixedSize().frame(minWidth: 28, alignment: .center)
                 Button(action: { vacationDays += 1 }) {
                     Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundColor(.shiftBlue)
                 }

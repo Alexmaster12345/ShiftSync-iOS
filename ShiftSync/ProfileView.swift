@@ -98,7 +98,9 @@ struct ProfileView: View {
                             .accessibilityLabel("Decrease vacation days per year")
                             Text("\(settings.vacationDaysPerYear)")
                                 .font(.ss(16, weight: .bold)).foregroundColor(.ssTextPrimary)
-                                .frame(width: 30, alignment: .center)
+                                .lineLimit(1)
+                                .fixedSize()
+                                .frame(minWidth: 30, alignment: .center)
                             Button(action: { settings.vacationDaysPerYear += 1 }) {
                                 Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.shiftBlue)
                             }
