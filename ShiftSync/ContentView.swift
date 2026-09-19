@@ -29,6 +29,10 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(settings.appTheme.colorScheme)
+        // Text sizing itself is handled per-Text-element by Font.ss() in Theme.swift,
+        // which reads settings.uiTextSizeIndex directly — a SwiftUI environment override
+        // here wouldn't help, since Font.ss() scales via UIFontMetrics against the live
+        // system trait collection, not SwiftUI's environment.
         .onAppear {
             // The native LaunchScreen.storyboard is a static system snapshot and can't
             // animate. This SwiftUI overlay takes over the instant our code runs, plays

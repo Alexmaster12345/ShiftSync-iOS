@@ -1075,6 +1075,60 @@ struct AppearanceView: View {
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
+                // Text Size
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
+                            Image(systemName: "textformat.size").font(.system(size: 15)).foregroundColor(.tealAccent)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Text Size").font(.ss(15)).foregroundColor(.ssTextPrimary)
+                            Text("Makes ShiftSync's own text bigger or smaller")
+                                .font(.ss(11)).foregroundColor(.ssTextSecondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+
+                    HStack(spacing: 16) {
+                        Button(action: {
+                            if settings.uiTextSizeIndex > 0 { settings.uiTextSizeIndex -= 1 }
+                        }) {
+                            Image(systemName: "textformat.size.smaller")
+                                .font(.system(size: 22))
+                                .foregroundColor(settings.uiTextSizeIndex > 0 ? .tealAccent : .ssTextMuted)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Decrease text size")
+
+                        Text(settings.uiTextSizeLabel)
+                            .font(.ss(14, weight: .semibold)).foregroundColor(.ssTextPrimary)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .frame(maxWidth: .infinity, alignment: .center)
+
+                        Button(action: {
+                            if settings.uiTextSizeIndex < AppSettings.uiTextSizeSteps.count - 1 { settings.uiTextSizeIndex += 1 }
+                        }) {
+                            Image(systemName: "textformat.size.larger")
+                                .font(.system(size: 22))
+                                .foregroundColor(settings.uiTextSizeIndex < AppSettings.uiTextSizeSteps.count - 1 ? .tealAccent : .ssTextMuted)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Increase text size")
+                    }
+                    .padding(.horizontal, 16).padding(.bottom, 14)
+
+                    Text("Independent of your iPhone's own Settings > Accessibility > Text Size — this only affects ShiftSync.")
+                        .font(.ss(10))
+                        .foregroundColor(.ssTextMuted)
+                        .padding(.horizontal, 16).padding(.bottom, 14)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
                 Spacer().frame(height: 32)
             }
             .padding(.horizontal, 16)

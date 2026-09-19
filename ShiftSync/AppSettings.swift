@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import UIKit
 
 // MARK: - App Theme
 enum AppTheme: String, Codable, CaseIterable {
@@ -92,6 +93,25 @@ class AppSettings: ObservableObject {
     // Controls how this app renders shift/activity times itself (Home, Calendar,
     // Export). Native DatePicker wheels always follow the device's own setting.
     @Published var use24HourClock: Bool = false { didSet { persist() } }
+    // In-app text size, independent of the device's own Settings > Accessibility >
+    // Display & Text Size setting — index into uiTextSizeSteps/uiTextSizeLabels below.
+    // systemDefaultTextSizeIndex ("Default") means "just follow the device's own
+    // accessibility text size setting" rather than forcing a fixed size — Font.ss(_:)
+    // in Theme.swift only overrides the live system setting when this is NOT that index.
+    @Published var uiTextSizeIndex: Int = AppSettings.systemDefaultTextSizeIndex { didSet { persist() } }
+
+    static let systemDefaultTextSizeIndex = 3
+    static let uiTextSizeSteps: [DynamicTypeSize] = [.xSmall, .small, .medium, .large, .xLarge, .xxLarge, .xxxLarge]
+    static let uiTextSizeLabels: [String] = ["Extra Small", "Small", "Medium", "Default", "Large", "Extra Large", "XX-Large"]
+    static let uiContentSizeCategorySteps: [UIContentSizeCategory] = [
+        .extraSmall, .small, .medium, .large, .extraLarge, .extraExtraLarge, .extraExtraExtraLarge
+    ]
+
+    private var clampedTextSizeIndex: Int { min(max(uiTextSizeIndex, 0), Self.uiTextSizeSteps.count - 1) }
+    var isUsingSystemDefaultTextSize: Bool { uiTextSizeIndex == Self.systemDefaultTextSizeIndex }
+    var uiDynamicTypeSize: DynamicTypeSize { Self.uiTextSizeSteps[clampedTextSizeIndex] }
+    var uiContentSizeCategory: UIContentSizeCategory { Self.uiContentSizeCategorySteps[clampedTextSizeIndex] }
+    var uiTextSizeLabel: String { Self.uiTextSizeLabels[clampedTextSizeIndex] }
 
     // Overtime rules
     @Published var overtimeEnabled: Bool = false       { didSet { persist() } }
@@ -133,6 +153,7 @@ class AppSettings: ObservableObject {
         var clockInReminderMinute: Int?
         var clockOutReminderHour: Int?
         var clockOutReminderMinute: Int?
+        var uiTextSizeIndex: Int?
     }
 
     init() {
@@ -174,6 +195,7 @@ class AppSettings: ObservableObject {
         clockInReminderMinute   = s.clockInReminderMinute   ?? 0
         clockOutReminderHour    = s.clockOutReminderHour    ?? 17
         clockOutReminderMinute  = s.clockOutReminderMinute  ?? 0
+        uiTextSizeIndex         = s.uiTextSizeIndex ?? 3
     }
 
     private func persist() {
@@ -203,7 +225,8 @@ class AppSettings: ObservableObject {
             clockInReminderHour: clockInReminderHour,
             clockInReminderMinute: clockInReminderMinute,
             clockOutReminderHour: clockOutReminderHour,
-            clockOutReminderMinute: clockOutReminderMinute
+            clockOutReminderMinute: clockOutReminderMinute,
+            uiTextSizeIndex: uiTextSizeIndex
         )
         UserDefaults.standard.set(try? JSONEncoder().encode(s), forKey: key)
     }

@@ -3,11 +3,18 @@ import UIKit
 
 // MARK: - Dynamic Type-aware fixed-size fonts
 extension Font {
-    /// Drop-in replacement for `.system(size:weight:design:)` that scales with the user's
-    /// Dynamic Type setting (via UIFontMetrics, the same mechanism UIKit uses to scale
-    /// custom fonts), while rendering at exactly the given point size under the default
-    /// content size category — so this is a behavior-preserving swap at default text size,
-    /// and only changes anything for users who've turned up their preferred text size.
+    /// Drop-in replacement for `.system(size:weight:design:)` that scales with a text size
+    /// setting, via UIFontMetrics (the same mechanism UIKit uses to scale custom fonts).
+    /// Renders at exactly the given point size under the default content size category —
+    /// a behavior-preserving swap when nobody has changed any text size setting.
+    ///
+    /// By default (AppSettings.shared's "Default" text size step) this tracks the
+    /// device's own live Settings > Accessibility > Text Size, same as UIFontMetrics.default
+    /// always has. But ShiftSync also exposes its own in-app Text Size control (Profile >
+    /// Appearance) so users can resize just this app's text — UIFontMetrics reads the
+    /// *live* system trait collection and has no way to know about that SwiftUI-only
+    /// setting, so when the user picks anything other than "Default" there we explicitly
+    /// pass a UITraitCollection carrying the chosen size instead, overriding the system's.
     static func ss(_ size: CGFloat, weight: Font.Weight = .regular, design: Font.Design = .default) -> Font {
         let uiWeight: UIFont.Weight = {
             switch weight {
@@ -27,7 +34,12 @@ extension Font {
            let descriptor = uiFont.fontDescriptor.withDesign(uiFont.fontDescriptor.uiDesign(for: design)) {
             uiFont = UIFont(descriptor: descriptor, size: size)
         }
-        return Font(UIFontMetrics.default.scaledFont(for: uiFont))
+        let settings = AppSettings.shared
+        if settings.isUsingSystemDefaultTextSize {
+            return Font(UIFontMetrics.default.scaledFont(for: uiFont))
+        }
+        let trait = UITraitCollection(preferredContentSizeCategory: settings.uiContentSizeCategory)
+        return Font(UIFontMetrics.default.scaledFont(for: uiFont, compatibleWith: trait))
     }
 }
 
