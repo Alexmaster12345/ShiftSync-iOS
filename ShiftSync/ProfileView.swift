@@ -441,7 +441,7 @@ struct SecurityPrivacyView: View {
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
-        .confirmationDialog("Clear All Data?", isPresented: $showClearConfirm, titleVisibility: .visible) {
+        .alert("Clear All Data?", isPresented: $showClearConfirm) {
             Button("Clear Everything", role: .destructive) {
                 store.clearAll()
                 AppSettings.shared.email    = ""
@@ -473,7 +473,7 @@ struct SecurityPrivacyView: View {
                 showImportAlert    = true
             }
         }
-        .confirmationDialog("Replace All Data?", isPresented: $showImportConfirm, titleVisibility: .visible) {
+        .alert("Replace All Data?", isPresented: $showImportConfirm) {
             Button("Import & Replace", role: .destructive) {
                 if let data = pendingImportData, store.importBackupData(data) {
                     importAlertTitle   = "Backup Restored"
