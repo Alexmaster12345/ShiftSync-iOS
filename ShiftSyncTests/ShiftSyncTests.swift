@@ -354,4 +354,79 @@ struct ShiftSyncTests {
 
         #expect(store.hasShifts(on: Date()))
     }
+
+    // MARK: - AppSettings: day-label formatting (pure function, no shared state)
+
+    @Test func daysLabelForEmptySetSaysNoDaysSelected() {
+        #expect(AppSettings.daysLabel([]) == "No days selected")
+    }
+
+    @Test func daysLabelForAllSevenDaysSaysEveryDay() {
+        #expect(AppSettings.daysLabel([1, 2, 3, 4, 5, 6, 7]) == "Every day")
+    }
+
+    @Test func daysLabelForMondayToFridayUsesWeekdaysShorthand() {
+        #expect(AppSettings.daysLabel([2, 3, 4, 5, 6]) == "Weekdays (Mon–Fri)")
+    }
+
+    @Test func daysLabelForCustomSetListsAbbreviatedDaysInOrder() {
+        // Sunday (1), Wednesday (4), Saturday (7) — deliberately unsorted input
+        #expect(AppSettings.daysLabel([7, 1, 4]) == "Sun, Wed, Sat")
+    }
+
+    // MARK: - AppSettings: rate calculations
+
+    @Test func effectiveHourlyRateUsesHourlyRateDirectlyWhenPaidHourly() {
+        let settings = AppSettings.shared
+        let originalType = settings.paymentType
+        let originalRate = settings.hourlyRate
+        defer { settings.paymentType = originalType; settings.hourlyRate = originalRate }
+
+        settings.paymentType = .hourly
+        settings.hourlyRate = 25
+        #expect(settings.effectiveHourlyRate == 25)
+    }
+
+    @Test func effectiveHourlyRateDerivesFromMonthlySalaryOver160Hours() {
+        let settings = AppSettings.shared
+        let originalType = settings.paymentType
+        let originalSalary = settings.monthlySalary
+        defer { settings.paymentType = originalType; settings.monthlySalary = originalSalary }
+
+        settings.paymentType = .monthly
+        settings.monthlySalary = 4000
+        #expect(settings.effectiveHourlyRate == 25) // 4000 / 160
+    }
+
+    @Test func dailyRateIsEffectiveHourlyRateTimesWorkDayHours() {
+        let settings = AppSettings.shared
+        let originalType = settings.paymentType
+        let originalRate = settings.hourlyRate
+        let originalHours = settings.workDayHours
+        defer {
+            settings.paymentType = originalType
+            settings.hourlyRate = originalRate
+            settings.workDayHours = originalHours
+        }
+
+        settings.paymentType = .hourly
+        settings.hourlyRate = 20
+        settings.workDayHours = 8
+        #expect(settings.dailyRate == 160)
+    }
+
+    // MARK: - AppSettings: Office/Home schedule labels
+
+    @Test func officeAndHomeDaysLabelsReflectCurrentSets() {
+        let settings = AppSettings.shared
+        let originalOffice = settings.officeDays
+        let originalHome = settings.homeDays
+        defer { settings.officeDays = originalOffice; settings.homeDays = originalHome }
+
+        settings.officeDays = [2, 4] // Mon, Wed
+        settings.homeDays = [3, 5]   // Tue, Thu
+
+        #expect(settings.officeDaysLabel == "Mon, Wed")
+        #expect(settings.homeDaysLabel == "Tue, Thu")
+    }
 }
