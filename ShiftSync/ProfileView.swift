@@ -989,6 +989,19 @@ struct AppearanceView: View {
     @ObservedObject private var settings = AppSettings.shared
     @Environment(\.dismiss) private var dismiss
 
+    // Staged locally so nothing takes effect until "Save Changes" is tapped —
+    // mirrors settings only on appear / on save, never bound directly to them.
+    @State private var theme: AppTheme = AppSettings.shared.appTheme
+    @State private var use24h: Bool = AppSettings.shared.use24HourClock
+    @State private var textSizeIndex: Int = AppSettings.shared.uiTextSizeIndex
+    @State private var saved = false
+
+    private var hasUnsavedChanges: Bool {
+        theme != settings.appTheme ||
+        use24h != settings.use24HourClock ||
+        textSizeIndex != settings.uiTextSizeIndex
+    }
+
     private let options: [(theme: AppTheme, label: String)] = [
         (.dark,   "Dark"),
         (.light,  "Light"),
@@ -1017,13 +1030,13 @@ struct AppearanceView: View {
 
                     HStack(spacing: 8) {
                         ForEach(options, id: \.theme) { opt in
-                            Button(action: { settings.appTheme = opt.theme }) {
+                            Button(action: { theme = opt.theme }) {
                                 Text(opt.label)
                                     .font(.ss(13, weight: .semibold))
-                                    .foregroundColor(settings.appTheme == opt.theme ? .white : .ssTextSecondary)
+                                    .foregroundColor(theme == opt.theme ? .white : .ssTextSecondary)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 9)
-                                    .background(settings.appTheme == opt.theme ? Color.shiftBlue : Color.darkBg)
+                                    .background(theme == opt.theme ? Color.shiftBlue : Color.darkBg)
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
                             .buttonStyle(.plain)
@@ -1051,14 +1064,14 @@ struct AppearanceView: View {
                     .padding(.horizontal, 16).padding(.vertical, 14)
 
                     HStack(spacing: 8) {
-                        ForEach([false, true], id: \.self) { use24h in
-                            Button(action: { settings.use24HourClock = use24h }) {
-                                Text(use24h ? "24-Hour" : "12-Hour (AM/PM)")
+                        ForEach([false, true], id: \.self) { option in
+                            Button(action: { use24h = option }) {
+                                Text(option ? "24-Hour" : "12-Hour (AM/PM)")
                                     .font(.ss(13, weight: .semibold))
-                                    .foregroundColor(settings.use24HourClock == use24h ? .white : .ssTextSecondary)
+                                    .foregroundColor(use24h == option ? .white : .ssTextSecondary)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 9)
-                                    .background(settings.use24HourClock == use24h ? Color.shiftBlue : Color.darkBg)
+                                    .background(use24h == option ? Color.shiftBlue : Color.darkBg)
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
                             .buttonStyle(.plain)
@@ -1093,27 +1106,27 @@ struct AppearanceView: View {
 
                     HStack(spacing: 16) {
                         Button(action: {
-                            if settings.uiTextSizeIndex > 0 { settings.uiTextSizeIndex -= 1 }
+                            if textSizeIndex > 0 { textSizeIndex -= 1 }
                         }) {
                             Image(systemName: "textformat.size.smaller")
                                 .font(.system(size: 22))
-                                .foregroundColor(settings.uiTextSizeIndex > 0 ? .tealAccent : .ssTextMuted)
+                                .foregroundColor(textSizeIndex > 0 ? .tealAccent : .ssTextMuted)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Decrease text size")
 
-                        Text(settings.uiTextSizeLabel)
+                        Text(AppSettings.uiTextSizeLabels[textSizeIndex])
                             .font(.ss(14, weight: .semibold)).foregroundColor(.ssTextPrimary)
                             .lineLimit(1)
                             .fixedSize()
                             .frame(maxWidth: .infinity, alignment: .center)
 
                         Button(action: {
-                            if settings.uiTextSizeIndex < AppSettings.uiTextSizeSteps.count - 1 { settings.uiTextSizeIndex += 1 }
+                            if textSizeIndex < AppSettings.uiTextSizeSteps.count - 1 { textSizeIndex += 1 }
                         }) {
                             Image(systemName: "textformat.size.larger")
                                 .font(.system(size: 22))
-                                .foregroundColor(settings.uiTextSizeIndex < AppSettings.uiTextSizeSteps.count - 1 ? .tealAccent : .ssTextMuted)
+                                .foregroundColor(textSizeIndex < AppSettings.uiTextSizeSteps.count - 1 ? .tealAccent : .ssTextMuted)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Increase text size")
@@ -1129,14 +1142,36 @@ struct AppearanceView: View {
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
+                Button(action: saveChanges) {
+                    Text(saved ? "Saved!" : "Save Changes")
+                        .font(.ss(16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity).frame(height: 50)
+                        .background(saved ? Color.greenAccent : (hasUnsavedChanges ? Color.shiftBlue : Color.shiftBlue.opacity(0.5)))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .disabled(!hasUnsavedChanges)
+
                 Spacer().frame(height: 32)
             }
             .padding(.horizontal, 16)
         }
         .background(Color.darkBg.ignoresSafeArea())
         .navigationBarHidden(true)
+        .onAppear {
+            theme = settings.appTheme
+            use24h = settings.use24HourClock
+            textSizeIndex = settings.uiTextSizeIndex
+        }
     }
 
+    private func saveChanges() {
+        settings.appTheme = theme
+        settings.use24HourClock = use24h
+        settings.uiTextSizeIndex = textSizeIndex
+        withAnimation { saved = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { saved = false }
+    }
 }
 
 // MARK: - Overtime Rules View
