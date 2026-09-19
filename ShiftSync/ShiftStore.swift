@@ -90,27 +90,32 @@ class ShiftStore: ObservableObject {
 
     private let entriesKey = "ss_shift_entries_v1"
     private let activeKey  = "ss_active_shift_start"
+    // Injectable so unit tests can point at an isolated UserDefaults suite instead of
+    // silently sharing (and wiping) the real app's storage on whatever simulator/device
+    // hosts the test bundle — defaults to .standard for actual app usage.
+    private let defaults: UserDefaults
 
-    init() {
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         loadEntries()
         loadActive()
     }
 
     // MARK: Persistence
     private func loadEntries() {
-        guard let data = UserDefaults.standard.data(forKey: entriesKey),
+        guard let data = defaults.data(forKey: entriesKey),
               let decoded = try? JSONDecoder().decode([ShiftEntry].self, from: data) else { return }
         entries = decoded
     }
 
     private func loadActive() {
-        guard let ts = UserDefaults.standard.object(forKey: activeKey) as? Double else { return }
+        guard let ts = defaults.object(forKey: activeKey) as? Double else { return }
         activeShiftStart = Date(timeIntervalSince1970: ts)
     }
 
     func saveEntries() {
         guard let data = try? JSONEncoder().encode(entries) else { return }
-        UserDefaults.standard.set(data, forKey: entriesKey)
+        defaults.set(data, forKey: entriesKey)
     }
 
     // MARK: Backup / Restore
@@ -140,9 +145,9 @@ class ShiftStore: ObservableObject {
         activeShiftStart = backup.activeShiftStart
         saveEntries()
         if let start = backup.activeShiftStart {
-            UserDefaults.standard.set(start.timeIntervalSince1970, forKey: activeKey)
+            defaults.set(start.timeIntervalSince1970, forKey: activeKey)
         } else {
-            UserDefaults.standard.removeObject(forKey: activeKey)
+            defaults.removeObject(forKey: activeKey)
         }
         WatchSessionManager.shared.sendStateUpdate()
         return true
@@ -152,7 +157,7 @@ class ShiftStore: ObservableObject {
     func clockIn() {
         let now = Date()
         activeShiftStart = now
-        UserDefaults.standard.set(now.timeIntervalSince1970, forKey: activeKey)
+        defaults.set(now.timeIntervalSince1970, forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
         // Mark today as worked and cancel "didn't make it to work?" alerts — a manual
         // clock-in is just as valid a signal as a geofence arrival that they're at work.
@@ -178,7 +183,7 @@ class ShiftStore: ObservableObject {
                 entries.append(contentsOf: [regularEntry, otEntry])
                 saveEntries()
                 activeShiftStart = nil
-                UserDefaults.standard.removeObject(forKey: activeKey)
+                defaults.removeObject(forKey: activeKey)
                 WatchSessionManager.shared.sendStateUpdate()
                 LocationManager.shared.markWorkedToday()
                 LocationManager.shared.scheduleDailyAbsenceCheck()
@@ -193,7 +198,7 @@ class ShiftStore: ObservableObject {
         entries.append(entry)
         saveEntries()
         activeShiftStart = nil
-        UserDefaults.standard.removeObject(forKey: activeKey)
+        defaults.removeObject(forKey: activeKey)
         WatchSessionManager.shared.sendStateUpdate()
         LocationManager.shared.markWorkedToday()
         LocationManager.shared.scheduleDailyAbsenceCheck()
@@ -275,8 +280,8 @@ class ShiftStore: ObservableObject {
     func clearAll() {
         entries = []
         activeShiftStart = nil
-        UserDefaults.standard.removeObject(forKey: entriesKey)
-        UserDefaults.standard.removeObject(forKey: activeKey)
+        defaults.removeObject(forKey: entriesKey)
+        defaults.removeObject(forKey: activeKey)
     }
 
     // MARK: Manual Entry

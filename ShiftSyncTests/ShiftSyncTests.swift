@@ -7,10 +7,20 @@ import Testing
 import Foundation
 @testable import ShiftSync
 
-// AppSettings and ShiftStore's underlying storage is UserDefaults.standard, shared with
-// whatever app/simulator hosts this test bundle. Tests run serialized (not in parallel)
-// and each one restores the settings it touches, so they don't leak state into each
-// other or into the real app if run on a device that also has ShiftSync installed.
+// ShiftStore is always constructed here with an isolated UserDefaults suite, NEVER
+// .standard — this test bundle runs hosted inside the real app's process/container on
+// whatever simulator or device runs it, so ShiftStore(defaults: .standard) would read
+// and (via clearAll()) WIPE the real app's actual saved shift data. Learned this the
+// hard way: an earlier version of this file used the default (.standard) and every
+// `clearAll()` call — present in nearly every test's cleanup — permanently erased
+// whatever real shift entries existed on the simulator these tests ran on.
+private let testDefaults = UserDefaults(suiteName: "com.shiftsync.tests")!
+
+// AppSettings has no injectable-storage equivalent yet, so tests that touch
+// AppSettings.shared do share the real settings singleton — but unlike ShiftStore,
+// nothing here ever deletes data; every test snapshots the exact properties it
+// changes and restores them via `defer`, which runs even if an #expect fails.
+// Tests run serialized (not in parallel) so those snapshot/restore pairs can't race.
 @Suite(.serialized)
 struct ShiftSyncTests {
 
@@ -128,7 +138,7 @@ struct ShiftSyncTests {
         settings.overtimeEnabled = true
         settings.dailyOvertimeHours = 8
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -153,7 +163,7 @@ struct ShiftSyncTests {
         settings.overtimeEnabled = true
         settings.dailyOvertimeHours = 8
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -170,7 +180,7 @@ struct ShiftSyncTests {
         defer { settings.overtimeEnabled = originalEnabled }
         settings.overtimeEnabled = false
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -193,7 +203,7 @@ struct ShiftSyncTests {
             settings.dailyOvertimeHours = originalThreshold
         }
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -218,7 +228,7 @@ struct ShiftSyncTests {
             settings.dailyOvertimeHours = originalThreshold
         }
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -242,7 +252,7 @@ struct ShiftSyncTests {
             settings.dailyOvertimeHours = originalThreshold
         }
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -263,7 +273,7 @@ struct ShiftSyncTests {
         let originalEnabled = settings.overtimeEnabled
         defer { settings.overtimeEnabled = originalEnabled }
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -287,7 +297,7 @@ struct ShiftSyncTests {
         settings.paymentType = .hourly
         settings.hourlyRate = 10
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -310,7 +320,7 @@ struct ShiftSyncTests {
         settings.paymentType = .hourly
         settings.hourlyRate = 10
 
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -329,7 +339,7 @@ struct ShiftSyncTests {
     // MARK: - ShiftStore: basic CRUD
 
     @Test func deleteEntryRemovesOnlyTheMatchingEntry() {
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
@@ -345,7 +355,7 @@ struct ShiftSyncTests {
     }
 
     @Test func hasShiftsOnDetectsSameCalendarDayRegardlessOfTime() {
-        let store = ShiftStore()
+        let store = ShiftStore(defaults: testDefaults)
         store.clearAll()
         defer { store.clearAll() }
 
