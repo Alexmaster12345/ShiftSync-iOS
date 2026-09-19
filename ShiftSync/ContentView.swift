@@ -68,13 +68,13 @@ private struct SplashView: View {
 
                 VStack(spacing: 8) {
                     Text("ShiftSync")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.ss(34, weight: .bold, design: .rounded))
                         .foregroundColor(Color(red: 0.11, green: 0.15, blue: 0.2))
 
                     HStack(spacing: 8) {
                         Rectangle().fill(Color.shiftBlue.opacity(0.4)).frame(width: 28, height: 1)
                         Text("INTELLIGENT SYNC")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.ss(11, weight: .semibold))
                             .kerning(2)
                             .foregroundColor(.shiftBlue)
                         Rectangle().fill(Color.shiftBlue.opacity(0.4)).frame(width: 28, height: 1)
@@ -210,6 +210,9 @@ struct MainTabView: View {
                         .frame(width: 38, height: 38)
                         .shadow(color: Color.shiftBlue.opacity(0.45), radius: 10, x: 0, y: 4)
                     Image(systemName: "plus")
+                        // Fixed size, not .ss() — this is a fixed-frame chrome icon, not
+                        // reading content, so it shouldn't grow with Dynamic Type (it would
+                        // just overflow its 38x38 box and crowd the tab bar).
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
                 }
@@ -254,6 +257,7 @@ struct MainTabView: View {
                         .frame(width: 38, height: 38)
                 }
                 Image(systemName: isActive ? activeIcon : icon)
+                    // Fixed size, not .ss() — see the "+" button's comment above.
                     .font(.system(size: 18, weight: isActive ? .semibold : .regular))
                     .foregroundColor(isActive ? .white : Color(UIColor.secondaryLabel))
             }
@@ -280,7 +284,7 @@ struct WorkplaceTabView: View {
         ScrollView {
             VStack(spacing: 20) {
                 Text("Workplace")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.ss(28, weight: .bold))
                     .foregroundColor(.ssTextPrimary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top, 12)
@@ -298,12 +302,12 @@ struct WorkplaceTabView: View {
                         }
                         VStack(alignment: .leading, spacing: 4) {
                             Text(settings.workplaceAddress.isEmpty ? "No workplace set" : "Workplace Active")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.ss(16, weight: .semibold))
                                 .foregroundColor(.ssTextPrimary)
                             Text(settings.workplaceAddress.isEmpty
                                  ? "Tap below to set your workplace location"
                                  : settings.workplaceAddress)
-                                .font(.system(size: 13))
+                                .font(.ss(13))
                                 .foregroundColor(.ssTextSecondary)
                                 .lineLimit(2)
                         }
@@ -317,9 +321,9 @@ struct WorkplaceTabView: View {
                         settingIcon("antenna.radiowaves.left.and.right", color: .shiftBlue)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Auto-Geofencing")
-                                .font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                .font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text(geofenceLabel)
-                                .font(.system(size: 11)).foregroundColor(geofenceLabelColor)
+                                .font(.ss(11)).foregroundColor(geofenceLabelColor)
                         }
                         Spacer()
                         Toggle("", isOn: $settings.locationAlertsEnabled)
@@ -348,9 +352,9 @@ struct WorkplaceTabView: View {
                             settingIcon("dot.radiowaves.up.forward", color: .tealAccent)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Detection Radius")
-                                    .font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                    .font(.ss(15)).foregroundColor(.ssTextPrimary)
                                 Text("How close you need to be for alerts to fire")
-                                    .font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                                    .font(.ss(11)).foregroundColor(.ssTextSecondary)
                             }
                             Spacer()
                         }
@@ -361,7 +365,7 @@ struct WorkplaceTabView: View {
                                     if locationManager.isMonitoring { locationManager.restoreMonitoring() }
                                 }) {
                                     Text(radius >= 1000 ? "\(Int(radius/1000))km" : "\(Int(radius))m")
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(.ss(13, weight: .semibold))
                                         .foregroundColor(settings.geofenceRadius == radius ? .white : .ssTextSecondary)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 8)
@@ -372,7 +376,7 @@ struct WorkplaceTabView: View {
                             }
                         }
                         Text("Smaller radii are more precise but less reliable — GPS accuracy makes anything under ~30m unlikely to trigger consistently.")
-                            .font(.system(size: 10))
+                            .font(.ss(10))
                             .foregroundColor(.ssTextMuted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -387,7 +391,7 @@ struct WorkplaceTabView: View {
                         HStack(spacing: 10) {
                             Image(systemName: "map.fill").font(.system(size: 17))
                             Text(settings.workplaceAddress.isEmpty ? "Set Workplace on Map" : "Update Workplace")
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.ss(15, weight: .semibold))
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity).frame(height: 52)
@@ -402,7 +406,7 @@ struct WorkplaceTabView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "bell.fill").font(.system(size: 17))
                                 Text("Test Notification")
-                                    .font(.system(size: 15, weight: .semibold))
+                                    .font(.ss(15, weight: .semibold))
                             }
                             .foregroundColor(.shiftBlue)
                             .frame(maxWidth: .infinity).frame(height: 52)

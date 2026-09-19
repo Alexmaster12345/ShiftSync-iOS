@@ -1,4 +1,46 @@
 import SwiftUI
+import UIKit
+
+// MARK: - Dynamic Type-aware fixed-size fonts
+extension Font {
+    /// Drop-in replacement for `.system(size:weight:design:)` that scales with the user's
+    /// Dynamic Type setting (via UIFontMetrics, the same mechanism UIKit uses to scale
+    /// custom fonts), while rendering at exactly the given point size under the default
+    /// content size category — so this is a behavior-preserving swap at default text size,
+    /// and only changes anything for users who've turned up their preferred text size.
+    static func ss(_ size: CGFloat, weight: Font.Weight = .regular, design: Font.Design = .default) -> Font {
+        let uiWeight: UIFont.Weight = {
+            switch weight {
+            case .ultraLight: return .ultraLight
+            case .thin:        return .thin
+            case .light:       return .light
+            case .medium:      return .medium
+            case .semibold:    return .semibold
+            case .bold:        return .bold
+            case .heavy:       return .heavy
+            case .black:       return .black
+            default:           return .regular
+            }
+        }()
+        var uiFont = UIFont.systemFont(ofSize: size, weight: uiWeight)
+        if design != .default,
+           let descriptor = uiFont.fontDescriptor.withDesign(uiFont.fontDescriptor.uiDesign(for: design)) {
+            uiFont = UIFont(descriptor: descriptor, size: size)
+        }
+        return Font(UIFontMetrics.default.scaledFont(for: uiFont))
+    }
+}
+
+private extension UIFontDescriptor {
+    func uiDesign(for design: Font.Design) -> UIFontDescriptor.SystemDesign {
+        switch design {
+        case .monospaced: return .monospaced
+        case .rounded:    return .rounded
+        case .serif:      return .serif
+        default:          return .default
+        }
+    }
+}
 
 // MARK: - Color Palette
 extension Color {

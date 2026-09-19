@@ -95,7 +95,7 @@ struct ManualEntryView: View {
 
                     Button(action: saveEntry) {
                         Text("Save Entry")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.ss(16, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
@@ -129,7 +129,7 @@ struct ManualEntryView: View {
                 .accessibilityLabel("Previous Month")
                 Spacer()
                 Text("\(Self.monthNames[displayMonth]) \(String(displayYear))")
-                    .font(.system(size: 15, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    .font(.ss(15, weight: .bold)).foregroundColor(.ssTextPrimary)
                 Spacer()
                 Button(action: {
                     if displayMonth == 11 { displayMonth = 0; displayYear += 1 } else { displayMonth += 1 }
@@ -140,7 +140,7 @@ struct ManualEntryView: View {
 
             HStack(spacing: 0) {
                 ForEach(Array(["M","T","W","T","F","S","S"].enumerated()), id: \.offset) { _, h in
-                    Text(h).font(.system(size: 12, weight: .semibold))
+                    Text(h).font(.ss(12, weight: .semibold))
                         .foregroundColor(.ssTextSecondary).frame(maxWidth: .infinity)
                 }
             }
@@ -188,11 +188,11 @@ struct ManualEntryView: View {
                         .font(.system(size: 13))
                         .foregroundColor(rangeAccent)
                     Text(vacationRangeSummary)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.ss(13, weight: .semibold))
                         .foregroundColor(rangeAccent)
                     Spacer()
                     Text("\(vacationDayCount) day\(vacationDayCount == 1 ? "" : "s")")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.ss(13, weight: .medium))
                         .foregroundColor(.ssTextSecondary)
                 }
                 .padding(.top, 4)
@@ -279,11 +279,11 @@ struct ManualEntryView: View {
                 .font(.system(size: 15))
                 .foregroundColor(color)
             Text("Estimated pay")
-                .font(.system(size: 14))
+                .font(.ss(14))
                 .foregroundColor(.ssTextSecondary)
             Spacer()
             Text(formatCurrency(pay))
-                .font(.system(size: 15, weight: .bold))
+                .font(.ss(15, weight: .bold))
                 .foregroundColor(color)
         }
         .padding(16)
@@ -297,7 +297,7 @@ struct ManualEntryView: View {
             sectionHeader("SHIFT HOURS")
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Start").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextSecondary)
+                    Text("Start").font(.ss(12, weight: .semibold)).foregroundColor(.ssTextSecondary)
                     DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
                         .datePickerStyle(.compact).labelsHidden().tint(.shiftBlue)
                         .onChange(of: startTime) {
@@ -306,7 +306,7 @@ struct ManualEntryView: View {
                 }
                 Image(systemName: "arrow.right").foregroundColor(.ssTextMuted).font(.system(size: 14))
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("End").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextSecondary)
+                    Text("End").font(.ss(12, weight: .semibold)).foregroundColor(.ssTextSecondary)
                     DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
                         .datePickerStyle(.compact).labelsHidden().tint(.shiftBlue)
                 }
@@ -316,7 +316,7 @@ struct ManualEntryView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "clock").font(.system(size: 12)).foregroundColor(.shiftBlue)
                     Text("Duration: \(formatDuration(durationMinutes))")
-                        .font(.system(size: 13, weight: .medium)).foregroundColor(.shiftBlue)
+                        .font(.ss(13, weight: .medium)).foregroundColor(.shiftBlue)
                 }
             }
         }
@@ -339,7 +339,7 @@ struct ManualEntryView: View {
                     }
                     .accessibilityLabel("Decrease unpaid break")
                     Text("\(breakMinutes) min")
-                        .font(.system(size: 14, weight: .semibold)).foregroundColor(.ssTextPrimary)
+                        .font(.ss(14, weight: .semibold)).foregroundColor(.ssTextPrimary)
                         .frame(width: 58, alignment: .center)
                     Button(action: { breakMinutes += 15 }) {
                         Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.shiftBlue)
@@ -358,7 +358,7 @@ struct ManualEntryView: View {
         VStack(alignment: .leading, spacing: 8) {
             sectionHeader("NOTES (OPTIONAL)")
             TextField(isDayType ? "e.g. Annual leave, doctor visit..." : "e.g. Forgot to clock in", text: $reason)
-                .font(.system(size: 14)).foregroundColor(.ssTextPrimary)
+                .font(.ss(14)).foregroundColor(.ssTextPrimary)
                 .padding(12).background(Color.darkBg)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.ssTextMuted.opacity(0.4), lineWidth: 1))
@@ -369,7 +369,7 @@ struct ManualEntryView: View {
     }
 
     private func sectionHeader(_ text: String) -> some View {
-        Text(text).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
+        Text(text).font(.ss(11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
     }
 
     // MARK: - Save
@@ -472,7 +472,7 @@ struct EditShiftView: View {
 
                 Button(action: saveChanges) {
                     Text("Save Changes")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.ss(16, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity).frame(height: 54)
                         .background(
@@ -504,7 +504,7 @@ struct EditShiftView: View {
     private var header: some View {
         HStack {
             Text("Edit Shift")
-                .font(.system(size: 24, weight: .bold))
+                .font(.ss(24, weight: .bold))
                 .foregroundColor(.ssTextPrimary)
             Spacer()
             Button(action: { showDeleteConfirm = true }) {
@@ -530,7 +530,7 @@ struct EditShiftView: View {
 
     private var dateRow: some View {
         VStack(alignment: .center, spacing: 8) {
-            Text("DATE").font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
+            Text("DATE").font(.ss(11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
             Button(action: {
                 withAnimation { showDatePicker.toggle(); showStartTimePicker = false; showEndTimePicker = false }
             }) {
@@ -539,7 +539,7 @@ struct EditShiftView: View {
                         RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
                         Image(systemName: "calendar").font(.system(size: 14)).foregroundColor(.shiftBlue)
                     }
-                    Text(dateLabel).font(.system(size: 16, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    Text(dateLabel).font(.ss(16, weight: .bold)).foregroundColor(.ssTextPrimary)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .semibold)).foregroundColor(.ssTextMuted)
@@ -602,10 +602,10 @@ struct EditShiftView: View {
 
     private func timeBox(label: String, time: Date, isActive: Bool, action: @escaping () -> Void) -> some View {
         VStack(alignment: .center, spacing: 8) {
-            Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
+            Text(label).font(.ss(11, weight: .semibold)).foregroundColor(.ssTextSecondary).kerning(1)
             Button(action: action) {
                 Text(formatTime(time))
-                    .font(.system(size: 17, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    .font(.ss(17, weight: .bold)).foregroundColor(.ssTextPrimary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(isActive ? Color.shiftBlue.opacity(0.12) : Color.darkCard)
@@ -624,7 +624,7 @@ struct EditShiftView: View {
                 RoundedRectangle(cornerRadius: 8).fill(Color.tealAccent.opacity(0.15)).frame(width: 34, height: 34)
                 Image(systemName: "sun.max.fill").font(.system(size: 14)).foregroundColor(.tealAccent)
             }
-            Text("Days").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+            Text("Days").font(.ss(15)).foregroundColor(.ssTextPrimary)
             Spacer()
             HStack(spacing: 16) {
                 Button(action: { if vacationDays > 1 { vacationDays -= 1 } }) {
@@ -632,7 +632,7 @@ struct EditShiftView: View {
                         .foregroundColor(vacationDays > 1 ? .shiftBlue : .ssTextMuted)
                 }
                 .accessibilityLabel("Decrease days")
-                Text("\(vacationDays)").font(.system(size: 18, weight: .bold)).foregroundColor(.ssTextPrimary).frame(width: 28, alignment: .center)
+                Text("\(vacationDays)").font(.ss(18, weight: .bold)).foregroundColor(.ssTextPrimary).frame(width: 28, alignment: .center)
                 Button(action: { vacationDays += 1 }) {
                     Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundColor(.shiftBlue)
                 }

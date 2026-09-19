@@ -110,10 +110,10 @@ struct NotificationsView: View {
                 .font(.system(size: 48))
                 .foregroundColor(.ssTextMuted)
             Text("No alerts yet")
-                .font(.system(size: 17, weight: .semibold))
+                .font(.ss(17, weight: .semibold))
                 .foregroundColor(.ssTextSecondary)
             Text("Arrival and departure alerts will appear here.")
-                .font(.system(size: 13))
+                .font(.ss(13))
                 .foregroundColor(.ssTextMuted)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
@@ -154,16 +154,16 @@ struct NotificationsView: View {
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(store.activeShiftStart != nil ? "Currently clocked in" : "Not clocked in")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.ss(14, weight: .semibold))
                     .foregroundColor(.ssTextPrimary)
                 if let start = store.activeShiftStart {
                     let mins = max(0, Int(Date().timeIntervalSince(start) / 60))
                     Text("Shift in progress · \(formatDuration(mins))")
-                        .font(.system(size: 12))
+                        .font(.ss(12))
                         .foregroundColor(.ssTextSecondary)
                 } else {
                     Text("Tap Clock In below or on the Home screen")
-                        .font(.system(size: 12))
+                        .font(.ss(12))
                         .foregroundColor(.ssTextMuted)
                 }
             }
@@ -172,7 +172,7 @@ struct NotificationsView: View {
                 if store.activeShiftStart != nil { store.clockOut() } else { store.clockIn() }
             }) {
                 Text(store.activeShiftStart != nil ? "Clock Out" : "Clock In")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.ss(13, weight: .bold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
@@ -208,10 +208,10 @@ struct NotificationsView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.ss(14, weight: .semibold))
                     .foregroundColor(.ssTextPrimary)
                 Text(timeFormatter.string(from: entry.date))
-                    .font(.system(size: 11))
+                    .font(.ss(11))
                     .foregroundColor(.ssTextMuted)
             }
 
@@ -219,7 +219,7 @@ struct NotificationsView: View {
 
             if alreadyActed {
                 Label("Done", systemImage: "checkmark.circle.fill")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.ss(12, weight: .semibold))
                     .foregroundColor(.greenAccent)
             } else {
                 Button(action: {
@@ -227,7 +227,7 @@ struct NotificationsView: View {
                     log.markActedOn(entry.id)
                 }) {
                     Text(actionLabel)
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.ss(13, weight: .bold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)

@@ -25,13 +25,13 @@ struct ProfileView: View {
                             .frame(width: 88, height: 88)
                             .shadow(color: Color.shiftBlue.opacity(0.3), radius: 8, y: 4)
                         Text(String(userName.prefix(1)).uppercased())
-                            .font(.system(size: 36, weight: .bold)).foregroundColor(.white)
+                            .font(.ss(36, weight: .bold)).foregroundColor(.white)
                     }
-                    Text(userName).font(.system(size: 22, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    Text(userName).font(.ss(22, weight: .bold)).foregroundColor(.ssTextPrimary)
                     let role = [settings.jobTitle, settings.branch]
                         .filter { !$0.isEmpty }.joined(separator: "  •  ")
                     if !role.isEmpty {
-                        Text(role).font(.system(size: 14)).foregroundColor(.ssTextSecondary)
+                        Text(role).font(.ss(14)).foregroundColor(.ssTextSecondary)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -84,9 +84,9 @@ struct ProfileView: View {
                     HStack(spacing: 12) {
                         settingIcon("beach.umbrella.fill", color: .tealAccent)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Days per Year").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Days per Year").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text("\(store.vacationDaysUsed) used of \(settings.vacationDaysPerYear)")
-                                .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                                .font(.ss(12)).foregroundColor(.ssTextSecondary)
                         }
                         Spacer()
                         HStack(spacing: 12) {
@@ -97,7 +97,7 @@ struct ProfileView: View {
                             }
                             .accessibilityLabel("Decrease vacation days per year")
                             Text("\(settings.vacationDaysPerYear)")
-                                .font(.system(size: 16, weight: .bold)).foregroundColor(.ssTextPrimary)
+                                .font(.ss(16, weight: .bold)).foregroundColor(.ssTextPrimary)
                                 .frame(width: 30, alignment: .center)
                             Button(action: { settings.vacationDaysPerYear += 1 }) {
                                 Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(.shiftBlue)
@@ -129,7 +129,7 @@ struct ProfileView: View {
                         HStack(spacing: 12) {
                             settingIcon("rectangle.portrait.and.arrow.right", color: .redAccent)
                             Text("Sign Out")
-                                .font(.system(size: 15)).foregroundColor(.redAccent)
+                                .font(.ss(15)).foregroundColor(.redAccent)
                             Spacer()
                         }
                         .padding(.horizontal, 16).padding(.vertical, 13)
@@ -139,10 +139,10 @@ struct ProfileView: View {
                 // ── About ────────────────────────────────────────────────
                 VStack(spacing: 2) {
                     Text("ShiftSync v\(appVersion)")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.ss(12, weight: .medium))
                         .foregroundColor(.ssTextMuted)
                     Text("© 2026 ShiftSync. All rights reserved.")
-                        .font(.system(size: 11))
+                        .font(.ss(11))
                         .foregroundColor(.ssTextMuted)
                 }
                 .frame(maxWidth: .infinity)
@@ -189,9 +189,9 @@ struct ProfileView: View {
 
     private func statCell(value: String, label: String) -> some View {
         VStack(spacing: 4) {
-            Text(value).font(.system(size: 17, weight: .bold)).foregroundColor(.ssTextPrimary)
+            Text(value).font(.ss(17, weight: .bold)).foregroundColor(.ssTextPrimary)
                 .lineLimit(1).minimumScaleFactor(0.7)
-            Text(label).font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+            Text(label).font(.ss(11)).foregroundColor(.ssTextSecondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -205,7 +205,7 @@ struct ProfileView: View {
 
     private func settingsSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(title).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary)
+            Text(title).font(.ss(11, weight: .semibold)).foregroundColor(.ssTextSecondary)
                 .kerning(1).padding(.horizontal, 4).padding(.bottom, 8)
             VStack(spacing: 0) { content() }
                 .background(Color.darkCard)
@@ -216,7 +216,7 @@ struct ProfileView: View {
     private func settingsRow(icon: String, label: String, color: Color) -> some View {
         HStack(spacing: 12) {
             settingIcon(icon, color: color)
-            Text(label).font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+            Text(label).font(.ss(15)).foregroundColor(.ssTextPrimary)
             Spacer()
             Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextMuted)
         }
@@ -229,9 +229,9 @@ struct ProfileView: View {
             HStack(spacing: 12) {
                 settingIcon(icon, color: color)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label).font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                    Text(label).font(.ss(15)).foregroundColor(.ssTextPrimary)
                     if let subtitle {
-                        Text(subtitle).font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                        Text(subtitle).font(.ss(12)).foregroundColor(.ssTextSecondary)
                     }
                 }
                 Spacer()
@@ -266,7 +266,7 @@ struct PersonalInfoView: View {
                                              startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: 72, height: 72)
                     Text(String((displayName.isEmpty ? userName : displayName).prefix(1)).uppercased())
-                        .font(.system(size: 28, weight: .bold)).foregroundColor(.white)
+                        .font(.ss(28, weight: .bold)).foregroundColor(.white)
                 }
 
                 VStack(spacing: 0) {
@@ -283,7 +283,7 @@ struct PersonalInfoView: View {
 
                 Button(action: saveChanges) {
                     Text(saved ? "Saved!" : "Save Changes")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.ss(16, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity).frame(height: 50)
                         .background(saved ? Color.greenAccent : Color.shiftBlue)
@@ -322,9 +322,9 @@ struct PersonalInfoView: View {
                 .foregroundColor(.shiftBlue)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextMuted)
+                Text(label).font(.ss(11, weight: .semibold)).foregroundColor(.ssTextMuted)
                 TextField(placeholder, text: text)
-                    .font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                    .font(.ss(15)).foregroundColor(.ssTextPrimary)
                     .keyboardType(keyboard).autocorrectionDisabled()
                     .autocapitalization(.words)
             }
@@ -375,9 +375,9 @@ struct SecurityPrivacyView: View {
                                 Image(systemName: "square.and.arrow.up").font(.system(size: 15)).foregroundColor(.tealAccent)
                             }
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Export Backup (JSON)").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                Text("Export Backup (JSON)").font(.ss(15)).foregroundColor(.ssTextPrimary)
                                 Text("Save your shift records to transfer to a new device")
-                                    .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                                    .font(.ss(12)).foregroundColor(.ssTextMuted)
                                     .multilineTextAlignment(.leading)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -396,9 +396,9 @@ struct SecurityPrivacyView: View {
                                 Image(systemName: "square.and.arrow.down").font(.system(size: 15)).foregroundColor(.shiftBlue)
                             }
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Import Backup").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                                Text("Import Backup").font(.ss(15)).foregroundColor(.ssTextPrimary)
                                 Text("Restore shift records from a previously exported file")
-                                    .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                                    .font(.ss(12)).foregroundColor(.ssTextMuted)
                                     .multilineTextAlignment(.leading)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -419,9 +419,9 @@ struct SecurityPrivacyView: View {
                             Image(systemName: "trash").font(.system(size: 15)).foregroundColor(.redAccent)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Clear All Data").font(.system(size: 15)).foregroundColor(.redAccent)
+                            Text("Clear All Data").font(.ss(15)).foregroundColor(.redAccent)
                             Text("Deletes all shifts, settings, and profile info")
-                                .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                                .font(.ss(12)).foregroundColor(.ssTextMuted)
                         }
                         Spacer()
                         Image(systemName: "chevron.right")
@@ -516,8 +516,8 @@ struct SecurityPrivacyView: View {
                 Image(systemName: icon).font(.system(size: 15)).foregroundColor(color)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.system(size: 15, weight: .semibold)).foregroundColor(.ssTextPrimary)
-                Text(subtitle).font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                Text(title).font(.ss(15, weight: .semibold)).foregroundColor(.ssTextPrimary)
+                Text(subtitle).font(.ss(12)).foregroundColor(.ssTextSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
@@ -668,8 +668,8 @@ private func legalCard(icon: String, color: Color, title: String, body: String) 
             Image(systemName: icon).font(.system(size: 15)).foregroundColor(color)
         }
         VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.system(size: 15, weight: .semibold)).foregroundColor(.ssTextPrimary)
-            Text(body).font(.system(size: 13)).foregroundColor(.ssTextSecondary)
+            Text(title).font(.ss(15, weight: .semibold)).foregroundColor(.ssTextPrimary)
+            Text(body).font(.ss(13)).foregroundColor(.ssTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         Spacer(minLength: 0)
@@ -699,9 +699,9 @@ struct NotificationPrefsView: View {
                             Image(systemName: "bell.badge").font(.system(size: 14)).foregroundColor(.orangeAccent)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Arrival & Departure Alerts").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Arrival & Departure Alerts").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text(settings.locationAlertsEnabled ? "On — notified when you arrive or leave work" : "Off")
-                                .font(.system(size: 12))
+                                .font(.ss(12))
                                 .foregroundColor(settings.locationAlertsEnabled ? .greenAccent : .ssTextMuted)
                         }
                         Spacer()
@@ -733,9 +733,9 @@ struct NotificationPrefsView: View {
                             Image(systemName: "house.fill").font(.system(size: 14)).foregroundColor(.tealAccent)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Work From Home").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Work From Home").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text(settings.workFromHomeEnabled ? "On — reminded to clock in/out at set times" : "Off")
-                                .font(.system(size: 12))
+                                .font(.ss(12))
                                 .foregroundColor(settings.workFromHomeEnabled ? .greenAccent : .ssTextMuted)
                         }
                         Spacer()
@@ -760,7 +760,7 @@ struct NotificationPrefsView: View {
                                 RoundedRectangle(cornerRadius: 8).fill(Color.orangeAccent.opacity(0.15)).frame(width: 34, height: 34)
                                 Image(systemName: "sunrise.fill").font(.system(size: 14)).foregroundColor(.orangeAccent)
                             }
-                            Text("Clock In Time").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Clock In Time").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Spacer()
                             DatePicker("", selection: clockInTimeBinding, displayedComponents: .hourAndMinute)
                                 .labelsHidden().datePickerStyle(.compact).tint(.shiftBlue)
@@ -774,7 +774,7 @@ struct NotificationPrefsView: View {
                                 RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 34, height: 34)
                                 Image(systemName: "sunset.fill").font(.system(size: 14)).foregroundColor(.shiftBlue)
                             }
-                            Text("Clock Out Time").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Clock Out Time").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Spacer()
                             DatePicker("", selection: clockOutTimeBinding, displayedComponents: .hourAndMinute)
                                 .labelsHidden().datePickerStyle(.compact).tint(.shiftBlue)
@@ -782,7 +782,7 @@ struct NotificationPrefsView: View {
                         .padding(.horizontal, 16).padding(.vertical, 12)
 
                         Text("Doesn't need a workplace location — reminders fire at these times on your Home days below, no geofencing required.")
-                            .font(.system(size: 11))
+                            .font(.ss(11))
                             .foregroundColor(.ssTextMuted)
                             .padding(.horizontal, 16).padding(.bottom, 14)
                             .fixedSize(horizontal: false, vertical: true)
@@ -799,9 +799,9 @@ struct NotificationPrefsView: View {
                             Image(systemName: "calendar.badge.checkmark").font(.system(size: 14)).foregroundColor(.tealAccent)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Work Schedule").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Work Schedule").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text(settings.workFromHomeEnabled ? "Tap a day to cycle Office → Home → Off" : "Tap a day to cycle Office → Off")
-                                .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                                .font(.ss(12)).foregroundColor(.ssTextSecondary)
                         }
                         Spacer()
                     }
@@ -824,15 +824,15 @@ struct NotificationPrefsView: View {
 
                     if !settings.workFromHomeEnabled {
                         Text("Turn on Work From Home above to assign days as Home.")
-                            .font(.system(size: 11))
+                            .font(.ss(11))
                             .foregroundColor(.ssTextMuted)
                             .padding(.horizontal, 16).padding(.bottom, 6)
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Office: \(settings.officeDaysLabel)").font(.system(size: 11)).foregroundColor(.ssTextSecondary)
-                        Text("Home: \(settings.homeDaysLabel)").font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                        Text("Office: \(settings.officeDaysLabel)").font(.ss(11)).foregroundColor(.ssTextSecondary)
+                        Text("Home: \(settings.homeDaysLabel)").font(.ss(11)).foregroundColor(.ssTextSecondary)
                     }
                     .padding(.horizontal, 16).padding(.bottom, 14)
 
@@ -843,7 +843,7 @@ struct NotificationPrefsView: View {
                             RoundedRectangle(cornerRadius: 8).fill(Color.orangeAccent.opacity(0.15)).frame(width: 34, height: 34)
                             Image(systemName: "clock.badge.exclamationmark").font(.system(size: 14)).foregroundColor(.orangeAccent)
                         }
-                        Text("Reminder Time").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                        Text("Reminder Time").font(.ss(15)).foregroundColor(.ssTextPrimary)
                         Spacer()
                         DatePicker("", selection: reminderTimeBinding, displayedComponents: .hourAndMinute)
                             .labelsHidden()
@@ -853,7 +853,7 @@ struct NotificationPrefsView: View {
                     .padding(.horizontal, 16).padding(.vertical, 14)
 
                     Text("\"Didn't make it to work today?\" fires at the time above, only on your Office days above.")
-                        .font(.system(size: 11))
+                        .font(.ss(11))
                         .foregroundColor(.ssTextMuted)
                         .padding(.horizontal, 16).padding(.bottom, 14)
                         .fixedSize(horizontal: false, vertical: true)
@@ -866,7 +866,7 @@ struct NotificationPrefsView: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { saved = false }
                 }) {
                     Text(saved ? "Saved!" : "Save Changes")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.ss(16, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity).frame(height: 50)
                         .background(saved ? Color.greenAccent : Color.shiftBlue)
@@ -960,7 +960,7 @@ struct NotificationPrefsView: View {
         }()
         return Button(action: { cycleDay(weekday) }) {
             Text(AppSettings.weekdaySymbolsShort[weekday - 1].prefix(1))
-                .font(.system(size: 13, weight: .bold))
+                .font(.ss(13, weight: .bold))
                 .foregroundColor(state == .off ? .ssTextMuted : .white)
                 .frame(width: 34, height: 34)
                 .background(bg)
@@ -976,7 +976,7 @@ struct NotificationPrefsView: View {
                 .fill(color)
                 .frame(width: 10, height: 10)
                 .overlay(Circle().stroke(Color.ssTextMuted.opacity(bordered ? 0.6 : 0), lineWidth: 1))
-            Text(label).font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+            Text(label).font(.ss(11)).foregroundColor(.ssTextSecondary)
         }
     }
 }
@@ -1005,9 +1005,9 @@ struct AppearanceView: View {
                             Image(systemName: "moon.circle.fill").font(.system(size: 15)).foregroundColor(.shiftBlue)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Theme").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Theme").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text("Controls the app's overall color scheme")
-                                .font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                                .font(.ss(11)).foregroundColor(.ssTextSecondary)
                         }
                         Spacer()
                     }
@@ -1017,7 +1017,7 @@ struct AppearanceView: View {
                         ForEach(options, id: \.theme) { opt in
                             Button(action: { settings.appTheme = opt.theme }) {
                                 Text(opt.label)
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.ss(13, weight: .semibold))
                                     .foregroundColor(settings.appTheme == opt.theme ? .white : .ssTextSecondary)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 9)
@@ -1040,9 +1040,9 @@ struct AppearanceView: View {
                             Image(systemName: "clock").font(.system(size: 15)).foregroundColor(.shiftBlue)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Time Format").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Time Format").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text("Used for shift times on Home, Calendar, and Export")
-                                .font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+                                .font(.ss(11)).foregroundColor(.ssTextSecondary)
                         }
                         Spacer()
                     }
@@ -1052,7 +1052,7 @@ struct AppearanceView: View {
                         ForEach([false, true], id: \.self) { use24h in
                             Button(action: { settings.use24HourClock = use24h }) {
                                 Text(use24h ? "24-Hour" : "12-Hour (AM/PM)")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.ss(13, weight: .semibold))
                                     .foregroundColor(settings.use24HourClock == use24h ? .white : .ssTextSecondary)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 9)
@@ -1065,7 +1065,7 @@ struct AppearanceView: View {
                     .padding(.horizontal, 16).padding(.bottom, 12)
 
                     Text("Native time pickers (Manual Entry, Reminder Time) always follow your iPhone's own 12/24-hour Region setting — iOS doesn't let apps override that.")
-                        .font(.system(size: 10))
+                        .font(.ss(10))
                         .foregroundColor(.ssTextMuted)
                         .padding(.horizontal, 16).padding(.bottom, 14)
                         .fixedSize(horizontal: false, vertical: true)
@@ -1119,9 +1119,9 @@ struct OvertimeRulesView: View {
                             Image(systemName: "clock.badge.exclamationmark.fill").font(.system(size: 15)).foregroundColor(.orangeAccent)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Overtime Rules").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Overtime Rules").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Text(settings.overtimeEnabled ? "Auto-splits shifts when threshold is exceeded" : "Off")
-                                .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                                .font(.ss(12)).foregroundColor(.ssTextSecondary)
                         }
                         Spacer()
                         Toggle("", isOn: $settings.overtimeEnabled).tint(.orangeAccent)
@@ -1163,8 +1163,8 @@ struct OvertimeRulesView: View {
                                 Image(systemName: "multiply.circle.fill").font(.system(size: 15)).foregroundColor(.greenAccent)
                             }
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Overtime Multiplier").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                                Text("Pay rate for overtime hours").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                                Text("Overtime Multiplier").font(.ss(15)).foregroundColor(.ssTextPrimary)
+                                Text("Pay rate for overtime hours").font(.ss(12)).foregroundColor(.ssTextSecondary)
                             }
                             Spacer()
                         }
@@ -1174,7 +1174,7 @@ struct OvertimeRulesView: View {
                             ForEach(multiplierOptions, id: \.self) { opt in
                                 Button(action: { settings.overtimeMultiplier = opt }) {
                                     Text(String(format: "%.2g×", opt))
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(.ss(14, weight: .semibold))
                                         .foregroundColor(settings.overtimeMultiplier == opt ? .white : .ssTextPrimary)
                                         .frame(maxWidth: .infinity).frame(height: 38)
                                         .background(settings.overtimeMultiplier == opt ? Color.greenAccent : Color.darkBg)
@@ -1192,7 +1192,7 @@ struct OvertimeRulesView: View {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "info.circle.fill").font(.system(size: 15)).foregroundColor(.shiftBlue)
                         Text("When you clock out after \(formattedHours(settings.dailyOvertimeHours)), ShiftSync automatically splits your shift: the first \(formattedHours(settings.dailyOvertimeHours)) at regular pay and the rest at \(String(format: "%.2g", settings.overtimeMultiplier))× pay.")
-                            .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                            .font(.ss(12)).foregroundColor(.ssTextSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(14)
@@ -1202,7 +1202,7 @@ struct OvertimeRulesView: View {
 
                 Button(action: saveChanges) {
                     Text(saved ? "Saved!" : "Save Changes")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.ss(16, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity).frame(height: 50)
                         .background(saved ? Color.greenAccent : Color.orangeAccent)
@@ -1262,8 +1262,8 @@ struct OvertimeRulesView: View {
                 Image(systemName: icon).font(.system(size: 15)).foregroundColor(color)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.system(size: 15)).foregroundColor(.ssTextPrimary)
-                Text(subtitle).font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                Text(label).font(.ss(15)).foregroundColor(.ssTextPrimary)
+                Text(subtitle).font(.ss(12)).foregroundColor(.ssTextSecondary)
             }
             Spacer()
             HStack(spacing: 8) {
@@ -1272,7 +1272,7 @@ struct OvertimeRulesView: View {
                 }.buttonStyle(.plain)
                 .accessibilityLabel("Decrease \(label)")
                 Text(formattedHours(value.wrappedValue))
-                    .font(.system(size: 14, weight: .bold)).foregroundColor(.ssTextPrimary)
+                    .font(.ss(14, weight: .bold)).foregroundColor(.ssTextPrimary)
                     .frame(minWidth: 36)
                 Button(action: { if value.wrappedValue < range.upperBound { value.wrappedValue = min(range.upperBound, value.wrappedValue + step) } }) {
                     Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(color)
@@ -1300,7 +1300,7 @@ struct SalarySettingsView: View {
 
                 // Currency
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("CURRENCY").font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary)
+                    Text("CURRENCY").font(.ss(11, weight: .semibold)).foregroundColor(.ssTextSecondary)
                         .kerning(1).padding(.horizontal, 4).padding(.bottom, 8)
                     VStack(spacing: 0) {
                         HStack(spacing: 12) {
@@ -1308,7 +1308,7 @@ struct SalarySettingsView: View {
                                 RoundedRectangle(cornerRadius: 8).fill(Color.greenAccent.opacity(0.15)).frame(width: 34, height: 34)
                                 Image(systemName: "dollarsign.circle").font(.system(size: 15)).foregroundColor(.greenAccent)
                             }
-                            Text("Currency").font(.system(size: 15)).foregroundColor(.ssTextPrimary)
+                            Text("Currency").font(.ss(15)).foregroundColor(.ssTextPrimary)
                             Spacer()
                         }
                         .padding(.horizontal, 16).padding(.vertical, 12)
@@ -1317,7 +1317,7 @@ struct SalarySettingsView: View {
                             ForEach(Currency.allCases, id: \.self) { cur in
                                 Button(action: { settings.currency = cur }) {
                                     Text(cur.displayName)
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(.ss(13, weight: .semibold))
                                         .foregroundColor(settings.currency == cur ? .white : .ssTextSecondary)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 9)
@@ -1334,7 +1334,7 @@ struct SalarySettingsView: View {
 
                 // Payment type, Rate, Work Day Hours — 3 side-by-side columns
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("PAY RATE").font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary)
+                    Text("PAY RATE").font(.ss(11, weight: .semibold)).foregroundColor(.ssTextSecondary)
                         .kerning(1).padding(.horizontal, 4).padding(.bottom, 8)
                     HStack(alignment: .top, spacing: 0) {
                         payRateColumn(icon: "calendar.badge.clock", iconColor: .shiftBlue, label: "Type") {
@@ -1351,7 +1351,7 @@ struct SalarySettingsView: View {
                                 // Picker's menu style doesn't reliably honor an outer .font()
                                 // modifier on its auto-generated label — a Menu with an explicit
                                 // Text gives exact control so this matches the other two columns.
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.ss(15, weight: .semibold))
                                 .foregroundColor(.shiftBlue)
                             }
                         }
@@ -1361,10 +1361,10 @@ struct SalarySettingsView: View {
                         payRateColumn(icon: "banknote", iconColor: .greenAccent, label: settings.rateLabel) {
                             HStack(spacing: 4) {
                                 Text(settings.currency.symbol)
-                                    .font(.system(size: 15, weight: .semibold)).foregroundColor(.shiftBlue)
+                                    .font(.ss(15, weight: .semibold)).foregroundColor(.shiftBlue)
                                 TextField("0", text: $rateText)
                                     .keyboardType(.decimalPad)
-                                    .font(.system(size: 15, weight: .semibold)).foregroundColor(.shiftBlue)
+                                    .font(.ss(15, weight: .semibold)).foregroundColor(.shiftBlue)
                                     .multilineTextAlignment(.leading)
                                     .fixedSize()
                                     .focused($rateFocused)
@@ -1391,7 +1391,7 @@ struct SalarySettingsView: View {
                                 .accessibilityLabel("Decrease work day hours")
                                 let h = settings.workDayHours
                                 Text(h == h.rounded() ? "\(Int(h))h" : String(format: "%.1fh", h))
-                                    .font(.system(size: 15, weight: .semibold)).foregroundColor(.ssTextPrimary)
+                                    .font(.ss(15, weight: .semibold)).foregroundColor(.ssTextPrimary)
                                 Button(action: { if settings.workDayHours < 24 { settings.workDayHours = min(24, settings.workDayHours + 0.5) } }) {
                                     Image(systemName: "plus.circle.fill").font(.system(size: 18)).foregroundColor(.tealAccent)
                                 }
@@ -1406,7 +1406,7 @@ struct SalarySettingsView: View {
 
                 Button(action: saveChanges) {
                     Text(saved ? "Saved!" : "Save Changes")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.ss(16, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity).frame(height: 50)
                         .background(saved ? Color.greenAccent : Color.shiftBlue)
@@ -1441,7 +1441,7 @@ struct SalarySettingsView: View {
                 RoundedRectangle(cornerRadius: 8).fill(iconColor.opacity(0.15)).frame(width: 34, height: 34)
                 Image(systemName: icon).font(.system(size: 15)).foregroundColor(iconColor)
             }
-            Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(.ssTextSecondary)
+            Text(label).font(.ss(11, weight: .semibold)).foregroundColor(.ssTextSecondary)
                 .lineLimit(1).minimumScaleFactor(0.8)
             content()
         }

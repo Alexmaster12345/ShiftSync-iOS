@@ -29,13 +29,13 @@ struct LoginView: View {
                     Spacer().frame(height: min(24, h * 0.036))
 
                     Text("ShiftSync")
-                        .font(.system(size: min(32, h * 0.048), weight: .black))
+                        .font(.ss(min(32, h * 0.048), weight: .black))
                         .foregroundColor(.ssTextPrimary)
 
                     Spacer().frame(height: min(8, h * 0.012))
 
                     Text("Track your hours, sync with your life.\nSimple & automatic.")
-                        .font(.system(size: 15))
+                        .font(.ss(15))
                         .foregroundColor(.ssTextSecondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(3)
@@ -45,7 +45,7 @@ struct LoginView: View {
                     // Name field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("What's your name?")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.ss(15, weight: .semibold))
                             .foregroundColor(.ssTextPrimary)
 
                         HStack(spacing: 10) {
@@ -53,7 +53,7 @@ struct LoginView: View {
                                 .foregroundColor(.ssTextMuted)
                                 .font(.system(size: 15))
                             TextField("e.g. Alex Johnson", text: $name)
-                                .font(.system(size: 15))
+                                .font(.ss(15))
                                 .foregroundColor(.ssTextPrimary)
                                 .disableAutocorrection(true)
                                 .focused($nameFocused)
@@ -70,7 +70,7 @@ struct LoginView: View {
                         )
 
                         Text("Optional — you can update this later in your profile.")
-                            .font(.system(size: 12))
+                            .font(.ss(12))
                             .foregroundColor(.ssTextMuted)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -80,7 +80,7 @@ struct LoginView: View {
                     // Primary CTA
                     Button(action: continueAsGuest) {
                         Text("Continue as Guest")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.ss(16, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 54)
@@ -95,7 +95,7 @@ struct LoginView: View {
                     HStack(spacing: 12) {
                         Rectangle().fill(Color(UIColor.separator)).frame(height: 1)
                         Text("or")
-                            .font(.system(size: 13))
+                            .font(.ss(13))
                             .foregroundColor(.ssTextMuted)
                             .fixedSize()
                         Rectangle().fill(Color(UIColor.separator)).frame(height: 1)
@@ -109,9 +109,9 @@ struct LoginView: View {
                             Image(systemName: "envelope")
                                 .font(.system(size: 14))
                             Text("Sign In with Email")
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.ss(15, weight: .semibold))
                             Text("Coming Soon")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.ss(10, weight: .bold))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)

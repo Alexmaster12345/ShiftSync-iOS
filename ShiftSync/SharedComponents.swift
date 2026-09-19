@@ -17,7 +17,7 @@ func navHeader(title: String, dismiss: DismissAction) -> some View {
             Spacer()
         }
         Text(title)
-            .font(.system(size: 20, weight: .bold))
+            .font(.ss(20, weight: .bold))
             .foregroundColor(.ssTextPrimary)
     }
     .padding(.horizontal, 16)
@@ -42,14 +42,14 @@ struct StatsCard: View {
                     .font(.system(size: 12))
                     .foregroundColor(.ssTextSecondary)
                 Text(label)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.ss(10, weight: .semibold))
                     .foregroundColor(.ssTextSecondary)
                     .kerning(0.5)
                     .lineLimit(1)
             }
             Spacer().frame(height: 8)
             Text(value)
-                .font(.system(size: 22, weight: .black))
+                .font(.ss(22, weight: .black))
                 .foregroundColor(.ssTextPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -68,7 +68,7 @@ struct StatsCard: View {
             if let s = sub {
                 Spacer().frame(height: 4)
                 Text(s)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.ss(11, weight: .medium))
                     .foregroundColor(subColor)
                     .lineLimit(1)
             }
@@ -143,22 +143,22 @@ struct WorkedShiftRow: View {
                             .font(.system(size: 13))
                             .foregroundColor(accentColor)
                         Text(dayLabel)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.ss(15, weight: .semibold))
                             .foregroundColor(.ssTextPrimary)
                     }
                     Text(daySubtitle)
-                        .font(.system(size: 12))
+                        .font(.ss(12))
                         .foregroundColor(.ssTextSecondary)
                 } else {
                     Text(timeRange)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.ss(15, weight: .semibold))
                         .foregroundColor(.ssTextPrimary)
                     Text("\(entry.shiftType.label)  •  \(formatDuration(entry.durationMinutes))")
-                        .font(.system(size: 12))
+                        .font(.ss(12))
                         .foregroundColor(.ssTextSecondary)
                     if entry.unpaidBreakMinutes > 0 {
                         Text("Break: \(entry.unpaidBreakMinutes) min")
-                            .font(.system(size: 11))
+                            .font(.ss(11))
                             .foregroundColor(.ssTextMuted)
                     }
                 }
@@ -167,7 +167,7 @@ struct WorkedShiftRow: View {
             Spacer()
 
             Text(formatCurrency(entry.estimatedPay))
-                .font(.system(size: 13, weight: .bold))
+                .font(.ss(13, weight: .bold))
                 .foregroundColor(entry.shiftType.isDayType ? accentColor : .greenAccent)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
@@ -221,7 +221,7 @@ struct CalendarDayCell: View {
             }
             if let d = day {
                 Text("\(d)")
-                    .font(.system(size: 14, weight: fontWeight))
+                    .font(.ss(14, weight: fontWeight))
                     .foregroundColor(textColor)
             }
         }
@@ -305,11 +305,11 @@ struct ScheduleShiftRow: View {
             // Date block
             VStack(spacing: 0) {
                 Text(monthLabel)
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.ss(10, weight: .bold))
                     .foregroundColor(rowAccentColor)
                     .kerning(0.5)
                 Text(dayLabel)
-                    .font(.system(size: 24, weight: .black))
+                    .font(.ss(24, weight: .black))
                     .foregroundColor(rowAccentColor)
             }
             .frame(width: 42)
@@ -317,10 +317,10 @@ struct ScheduleShiftRow: View {
             // Shift info
             VStack(alignment: .leading, spacing: 3) {
                 Text(shiftName)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.ss(15, weight: .bold))
                     .foregroundColor(entry.shiftType.isDayType ? rowAccentColor : .ssTextPrimary)
                 Text(subtitleText)
-                    .font(.system(size: 12))
+                    .font(.ss(12))
                     .foregroundColor(.ssTextSecondary)
             }
 
@@ -329,10 +329,10 @@ struct ScheduleShiftRow: View {
             // Right: hours + status
             VStack(alignment: .trailing, spacing: 4) {
                 Text(hoursLabel)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.ss(15, weight: .bold))
                     .foregroundColor(.ssTextPrimary)
                 Text(badgeLabel)
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.ss(10, weight: .bold))
                     .foregroundColor(entry.shiftType.isDayType ? rowAccentColor : .greenAccent)
                     .kerning(0.5)
             }

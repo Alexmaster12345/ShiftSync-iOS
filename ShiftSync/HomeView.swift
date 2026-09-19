@@ -161,12 +161,12 @@ struct HomeView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("ShiftSync")
-                    .font(.system(size: 26, weight: .black))
+                    .font(.ss(26, weight: .black))
                     .foregroundColor(.ssTextPrimary)
                     .minimumScaleFactor(0.8)
                     .lineLimit(1)
                 Text("\(greeting), \(userName)")
-                    .font(.system(size: 14))
+                    .font(.ss(14))
                     .foregroundColor(.ssTextSecondary)
                     .minimumScaleFactor(0.8)
                     .lineLimit(1)
@@ -200,7 +200,7 @@ struct HomeView: View {
                     .shadow(color: Color.shiftBlue.opacity(0.25), radius: 4, y: 2)
                     .overlay(
                         Text(String(userName.prefix(1)).uppercased())
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.ss(16, weight: .bold))
                             .foregroundColor(.white)
                     )
             }
@@ -213,7 +213,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
                 Text("ACTIVE SHIFT")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.ss(14, weight: .bold))
                     .foregroundColor(.white.opacity(0.72))
                     .kerning(1.5)
                 Spacer()
@@ -232,7 +232,7 @@ struct HomeView: View {
             Spacer().frame(height: 6)
 
             Text(isClocked ? formatElapsedHMS(elapsedSeconds) : "00:00:00")
-                .font(.system(size: 28, weight: .black, design: .monospaced))
+                .font(.ss(28, weight: .black, design: .monospaced))
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
                 .foregroundColor(.white)
@@ -251,7 +251,7 @@ struct HomeView: View {
 
             Button(action: { isClocked ? store.clockOut() : store.clockIn() }) {
                 Text(isClocked ? "Clock Out" : "Clock In")
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.ss(15, weight: .bold))
                     .foregroundColor(.shiftBlue)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -275,10 +275,10 @@ struct HomeView: View {
     private func infoBox(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.system(size: 10))
+                .font(.ss(10))
                 .foregroundColor(.white.opacity(0.68))
             Text(value)
-                .font(.system(size: 15, weight: .bold))
+                .font(.ss(15, weight: .bold))
                 .foregroundColor(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -314,22 +314,22 @@ struct HomeView: View {
                         .foregroundColor(.greenAccent)
                 }
                 Text("This Week")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.ss(13, weight: .medium))
                     .foregroundColor(.ssTextSecondary)
             }
             Text(store.weeklyMinutes > 0 ? formatDuration(store.weeklyMinutes) : "0h")
-                .font(.system(size: 16, weight: .black))
+                .font(.ss(16, weight: .black))
                 .foregroundColor(.ssTextPrimary)
                 .minimumScaleFactor(0.7).lineLimit(1)
             Text(cmp.text)
-                .font(.system(size: 11, weight: .medium))
+                .font(.ss(11, weight: .medium))
                 .foregroundColor(cmp.isPositive ? .greenAccent : .redAccent)
                 .lineLimit(1)
             if exceedsWeeklyThreshold {
                 HStack(spacing: 4) {
                     Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 9))
                     Text("Over \(Int(settings.weeklyOvertimeHours))h/week limit")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.ss(10, weight: .semibold))
                 }
                 .foregroundColor(.orangeAccent)
                 .lineLimit(1)
@@ -355,15 +355,15 @@ struct HomeView: View {
                         .foregroundColor(.shiftBlue)
                 }
                 Text("This Month")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.ss(13, weight: .medium))
                     .foregroundColor(.ssTextSecondary)
             }
             Text(store.monthlyMinutes > 0 ? formatDuration(store.monthlyMinutes) : "0h")
-                .font(.system(size: 16, weight: .black))
+                .font(.ss(16, weight: .black))
                 .foregroundColor(.ssTextPrimary)
                 .minimumScaleFactor(0.7).lineLimit(1)
             Text("\(monthlyShiftCount) shifts total")
-                .font(.system(size: 11, weight: .medium))
+                .font(.ss(11, weight: .medium))
                 .foregroundColor(.ssTextMuted)
                 .lineLimit(1)
         }
@@ -380,12 +380,12 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("RECENT ACTIVITY")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.ss(12, weight: .bold))
                     .foregroundColor(.ssTextSecondary)
                     .kerning(1)
                 Spacer()
                 Button("View All") { showManualEntry = true }
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.ss(13, weight: .semibold))
                     .foregroundColor(.shiftBlue)
             }
 
@@ -408,10 +408,10 @@ struct HomeView: View {
                         .font(.system(size: 34))
                         .foregroundColor(.ssTextMuted)
                     Text("No shifts logged yet")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.ss(14, weight: .medium))
                         .foregroundColor(.ssTextMuted)
                     Button("Log your first shift") { showManualEntry = true }
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.ss(14, weight: .semibold))
                         .foregroundColor(.shiftBlue)
                 }
                 .frame(maxWidth: .infinity)
@@ -465,15 +465,15 @@ struct HomeView: View {
             // Title · time on the same line
             HStack(spacing: 4) {
                 Text(titleTxt)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.ss(14, weight: .semibold))
                     .foregroundColor(.ssTextPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 Text("·")
-                    .font(.system(size: 12))
+                    .font(.ss(12))
                     .foregroundColor(.ssTextMuted)
                 Text(infoTxt)
-                    .font(.system(size: 12))
+                    .font(.ss(12))
                     .foregroundColor(.ssTextSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
@@ -484,18 +484,18 @@ struct HomeView: View {
             // Duration + overtime badge + pay
             VStack(alignment: .trailing, spacing: 2) {
                 Text(durationTxt)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.ss(13, weight: .bold))
                     .foregroundColor(.ssTextPrimary)
                 if isOT {
                     Text(String(format: "%.2g×", settings.overtimeMultiplier))
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.ss(10, weight: .bold))
                         .foregroundColor(.orangeAccent)
                         .padding(.horizontal, 5).padding(.vertical, 2)
                         .background(Color.orangeAccent.opacity(0.14))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                 }
                 Text(formatCurrency(pay))
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.ss(11, weight: .semibold))
                     .foregroundColor(isOT ? .orangeAccent : (entry.shiftType.isDayType ? accent : .greenAccent))
             }
         }

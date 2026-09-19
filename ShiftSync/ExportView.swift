@@ -64,7 +64,7 @@ struct ExportView: View {
                             .font(.system(size: 13))
                             .foregroundColor(.tealAccent)
                         Text("Period")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.ss(12, weight: .semibold))
                             .foregroundColor(.ssTextMuted)
                             .kerning(0.4)
                     }
@@ -89,9 +89,9 @@ struct ExportView: View {
                 // Summary card
                 VStack(spacing: 12) {
                     HStack {
-                        Text("SUMMARY").font(.system(size: 11, weight: .bold)).foregroundColor(.ssTextMuted).kerning(0.5)
+                        Text("SUMMARY").font(.ss(11, weight: .bold)).foregroundColor(.ssTextMuted).kerning(0.5)
                         Spacer()
-                        Text("\(filteredEntries.count) shifts").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                        Text("\(filteredEntries.count) shifts").font(.ss(12)).foregroundColor(.ssTextSecondary)
                     }
                     HStack(spacing: 0) {
                         summaryCell(label: "Total Hours", value: String(format: "%.1fh", totalHours), color: .shiftBlue)
@@ -123,7 +123,7 @@ struct ExportView: View {
                 if !filteredEntries.isEmpty {
                     VStack(spacing: 0) {
                         HStack {
-                            Text("PREVIEW").font(.system(size: 11, weight: .bold)).foregroundColor(.ssTextMuted).kerning(0.5)
+                            Text("PREVIEW").font(.ss(11, weight: .bold)).foregroundColor(.ssTextMuted).kerning(0.5)
                             Spacer()
                         }
                         .padding(.bottom, 8)
@@ -134,7 +134,7 @@ struct ExportView: View {
                             }
                             if filteredEntries.count > 10 {
                                 Text("+ \(filteredEntries.count - 10) more shifts")
-                                    .font(.system(size: 12)).foregroundColor(.ssTextMuted)
+                                    .font(.ss(12)).foregroundColor(.ssTextMuted)
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .padding(.top, 4)
                             }
@@ -143,7 +143,7 @@ struct ExportView: View {
                 } else {
                     VStack(spacing: 10) {
                         Image(systemName: "tray").font(.system(size: 34)).foregroundColor(.ssTextMuted)
-                        Text("No shifts in this period").font(.system(size: 14)).foregroundColor(.ssTextMuted)
+                        Text("No shifts in this period").font(.ss(14)).foregroundColor(.ssTextMuted)
                     }
                     .frame(maxWidth: .infinity).padding(32)
                     .background(Color.darkCard).clipShape(RoundedRectangle(cornerRadius: 16))
@@ -161,8 +161,8 @@ struct ExportView: View {
 
     private func summaryCell(label: String, value: String, color: Color) -> some View {
         VStack(spacing: 4) {
-            Text(value).font(.system(size: 20, weight: .black)).foregroundColor(color)
-            Text(label).font(.system(size: 11)).foregroundColor(.ssTextSecondary)
+            Text(value).font(.ss(20, weight: .black)).foregroundColor(color)
+            Text(label).font(.ss(11)).foregroundColor(.ssTextSecondary)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 14)
     }
@@ -175,8 +175,8 @@ struct ExportView: View {
                     Image(systemName: icon).font(.system(size: 15)).foregroundColor(color)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label).font(.system(size: 15, weight: .semibold)).foregroundColor(.ssTextPrimary)
-                    Text(subtitle).font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                    Text(label).font(.ss(15, weight: .semibold)).foregroundColor(.ssTextPrimary)
+                    Text(subtitle).font(.ss(12)).foregroundColor(.ssTextSecondary)
                 }
                 Spacer()
                 Image(systemName: "arrow.up.forward").font(.system(size: 13, weight: .semibold)).foregroundColor(color)
@@ -196,19 +196,19 @@ struct ExportView: View {
         let endDate = entry.startedAt.addingTimeInterval(Double(entry.durationMinutes) * 60)
         return HStack(spacing: 10) {
             Text(fmt.string(from: entry.startedAt))
-                .font(.system(size: 12, weight: .semibold)).foregroundColor(.ssTextSecondary)
+                .font(.ss(12, weight: .semibold)).foregroundColor(.ssTextSecondary)
                 .frame(width: 48, alignment: .leading)
             Text(entry.shiftType.label)
-                .font(.system(size: 12)).foregroundColor(.ssTextPrimary)
+                .font(.ss(12)).foregroundColor(.ssTextPrimary)
             Spacer()
             if entry.shiftType.isDayType {
-                Text("\(entry.dayCount) day\(entry.dayCount == 1 ? "" : "s")").font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                Text("\(entry.dayCount) day\(entry.dayCount == 1 ? "" : "s")").font(.ss(12)).foregroundColor(.ssTextSecondary)
             } else {
                 Text("\(formatTime(entry.startedAt))–\(formatTime(endDate))")
-                    .font(.system(size: 12)).foregroundColor(.ssTextSecondary)
+                    .font(.ss(12)).foregroundColor(.ssTextSecondary)
             }
             Text("\(settings.currency.symbol)\(String(format: "%.2f", entry.estimatedPay))")
-                .font(.system(size: 12, weight: .semibold)).foregroundColor(.greenAccent)
+                .font(.ss(12, weight: .semibold)).foregroundColor(.greenAccent)
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
         .background(Color.darkCard)

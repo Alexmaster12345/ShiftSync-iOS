@@ -75,7 +75,7 @@ struct CalendarView: View {
         ScrollView {
             VStack(spacing: 0) {
                 Text("Schedule")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.ss(28, weight: .bold))
                     .foregroundColor(.ssTextPrimary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top, 12)
@@ -97,12 +97,12 @@ struct CalendarView: View {
                 // Section header
                 HStack {
                     Text("SHIFTS FOR \(Self.monthNames[displayMonth].uppercased())")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.ss(13, weight: .bold))
                         .foregroundColor(.ssTextPrimary)
                     Spacer()
                     if !monthShifts.isEmpty {
                         Text("\(monthShifts.count) SHIFT\(monthShifts.count == 1 ? "" : "S") • \(totalMonthHoursLabel)")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.ss(12, weight: .medium))
                             .foregroundColor(.ssTextSecondary)
                     }
                 }
@@ -115,10 +115,10 @@ struct CalendarView: View {
                             .font(.system(size: 34))
                             .foregroundColor(.ssTextMuted)
                         Text("No shifts this month")
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.ss(14, weight: .medium))
                             .foregroundColor(.ssTextMuted)
                         Button("Add a Shift") { showManualEntry = true }
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.ss(14, weight: .semibold))
                             .foregroundColor(.shiftBlue)
                     }
                     .frame(maxWidth: .infinity)
@@ -166,7 +166,7 @@ struct CalendarView: View {
             .accessibilityLabel("Previous Month")
             Spacer()
             Text("\(Self.monthNames[displayMonth]) \(String(displayYear))")
-                .font(.system(size: 17, weight: .bold))
+                .font(.ss(17, weight: .bold))
                 .foregroundColor(.ssTextPrimary)
             Spacer()
             Button(action: nextMonth) {
@@ -184,7 +184,7 @@ struct CalendarView: View {
         HStack(spacing: 0) {
             ForEach(Array(["S","M","T","W","T","F","S"].enumerated()), id: \.offset) { _, h in
                 Text(h)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.ss(11, weight: .semibold))
                     .foregroundColor(.ssTextMuted)
                     .frame(maxWidth: .infinity)
             }

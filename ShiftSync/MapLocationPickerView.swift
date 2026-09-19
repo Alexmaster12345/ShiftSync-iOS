@@ -49,7 +49,7 @@ struct MapLocationPickerView: View {
                     .font(.system(size: 15))
 
                 TextField("Search address…", text: $searchText)
-                    .font(.system(size: 15))
+                    .font(.ss(15))
                     .foregroundColor(.ssTextPrimary)
                     .submitLabel(.search)
                     .focused($searchFocused)
@@ -82,7 +82,7 @@ struct MapLocationPickerView: View {
 
             if let error = searchError {
                 Text(error)
-                    .font(.system(size: 12))
+                    .font(.ss(12))
                     .foregroundColor(.red.opacity(0.85))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 4)
@@ -151,7 +151,7 @@ struct MapLocationPickerView: View {
                 .font(.system(size: 24))
                 .foregroundColor(.ssTextMuted)
             Text("Tap anywhere on the map to pin your workplace")
-                .font(.system(size: 14))
+                .font(.ss(14))
                 .foregroundColor(.ssTextSecondary)
                 .multilineTextAlignment(.center)
         }
@@ -173,22 +173,22 @@ struct MapLocationPickerView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     if isResolving {
                         Text("Resolving address…")
-                            .font(.system(size: 13))
+                            .font(.ss(13))
                             .foregroundColor(.ssTextSecondary)
                     } else if !resolvedAddress.isEmpty {
                         Text(resolvedAddress)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.ss(13, weight: .medium))
                             .foregroundColor(.ssTextPrimary)
                             .lineLimit(2)
                     } else {
                         if let c = pickedCoordinate {
                             Text(String(format: "%.5f, %.5f", c.latitude, c.longitude))
-                                .font(.system(size: 13))
+                                .font(.ss(13))
                                 .foregroundColor(.ssTextSecondary)
                         }
                     }
                     Text("Tap again to move the pin")
-                        .font(.system(size: 11))
+                        .font(.ss(11))
                         .foregroundColor(.ssTextMuted)
                 }
                 Spacer()
@@ -200,7 +200,7 @@ struct MapLocationPickerView: View {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 18))
                     Text("Set as Workplace")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.ss(16, weight: .bold))
                 }
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
