@@ -37,7 +37,7 @@ Tracks the items needed to submit ShiftSync 1.0. Items marked `[x]` are done in 
 ## 6. Accessibility
 
 - [x] Added `accessibilityLabel`s to icon-only buttons app-wide (tab bar, back button, month navigation chevrons, all +/- steppers, notification bell, map search-clear button).
-- [ ] **Dynamic Type** — not implemented. The app's custom design system uses fixed `.font(.system(size:))` values throughout rather than scalable text styles; adopting Dynamic Type would mean re-tuning layouts across every screen and was out of scope for this pass. Flag if you want this tackled as a dedicated follow-up.
+- [x] **Dynamic Type** — implemented app-wide via a `Font.ss(size:weight:design:)` helper (`Theme.swift`) that scales fixed point sizes with the user's preferred text size using `UIFontMetrics`. Icon-only glyphs (tab bar, icon badges) intentionally stay fixed-size per Apple's HIG. Verified at `accessibility-extra-large` on Home, Calendar, and Profile — text scales and truncates/wraps gracefully; a couple of small fixed-width numeric badges (calendar day date badge, vacation-days stepper count) wrap awkwardly at the most extreme size but stay legible — acceptable, not blocking.
 
 ## 7. Deferred to Roadmap (not built this round)
 
