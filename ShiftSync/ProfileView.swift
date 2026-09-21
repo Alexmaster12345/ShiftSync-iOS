@@ -340,6 +340,7 @@ struct PersonalInfoView: View {
 struct SecurityPrivacyView: View {
     @ObservedObject var store: ShiftStore
     let onLogout: () -> Void
+    @ObservedObject private var settings = AppSettings.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showClearConfirm = false
     @State private var showImporter = false
@@ -364,6 +365,34 @@ struct SecurityPrivacyView: View {
                     privacyRow(icon: "person.slash.fill", color: .tealAccent,
                                title: "No account required",
                                subtitle: "ShiftSync works without sign-up. Your data stays private and is never shared.")
+                }
+                .background(Color.darkCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                // App Lock
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8).fill(Color.shiftBlue.opacity(0.15)).frame(width: 38, height: 38)
+                            Image(systemName: "faceid").font(.system(size: 16)).foregroundColor(.shiftBlue)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("App Lock").font(.ss(15)).foregroundColor(.ssTextPrimary)
+                            Text(settings.appLockEnabled ? "On — Face ID, Touch ID, or passcode required" : "Off")
+                                .font(.ss(12))
+                                .foregroundColor(settings.appLockEnabled ? .greenAccent : .ssTextMuted)
+                        }
+                        Spacer()
+                        Toggle("", isOn: $settings.appLockEnabled).tint(.shiftBlue)
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+
+                    Text("When on, ShiftSync requires Face ID, Touch ID, or your device passcode every time you open the app or return to it.")
+                        .font(.ss(10))
+                        .foregroundColor(.ssTextMuted)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16).padding(.bottom, 14)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -512,6 +541,12 @@ struct SecurityPrivacyView: View {
             .appendingPathComponent("ShiftSync-Backup-\(df.string(from: Date())).json")
         try? data.write(to: url)
         let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        // The chosen destination (Files, AirDrop, Mail, etc.) already has its own copy
+        // by the time this fires, so cleaning up our temp copy here — success or not —
+        // just stops the backup from lingering unencrypted in tmp/ afterward.
+        vc.completionWithItemsHandler = { _, _, _, _ in
+            try? FileManager.default.removeItem(at: url)
+        }
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let root = scene.windows.first?.rootViewController {
             root.present(vc, animated: true)

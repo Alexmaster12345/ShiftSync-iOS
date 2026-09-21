@@ -6,8 +6,11 @@ import Combine
 struct ContentView: View {
     @StateObject private var store = ShiftStore.shared
     @ObservedObject private var settings = AppSettings.shared
+    @ObservedObject private var appLock = AppLockManager.shared
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("ss_user_name") private var userName: String = ""
     @State private var showSplash = true
+    @State private var isBackgroundMasked = false
 
     var body: some View {
         ZStack {
@@ -22,9 +25,16 @@ struct ContentView: View {
                     }
                 }
             }
+            .blur(radius: isBackgroundMasked ? 20 : 0)
+            .animation(.easeInOut(duration: 0.2), value: isBackgroundMasked)
 
             if showSplash {
                 SplashView()
+                    .transition(.opacity)
+            }
+
+            if settings.appLockEnabled && !appLock.isUnlocked {
+                AppLockOverlay()
                     .transition(.opacity)
             }
         }
@@ -40,6 +50,21 @@ struct ContentView: View {
             // the standard way apps achieve an "animated splash" on iOS.
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                 withAnimation(.easeOut(duration: 0.5)) { showSplash = false }
+            }
+            if settings.appLockEnabled {
+                appLock.lock()
+            }
+        }
+        // Masks content the instant the app stops being frontmost (app switcher preview,
+        // Control Center, an incoming call, etc.) so a plain screenshot of shift/earnings
+        // data can't be captured — and re-locks behind Face ID/Touch ID if App Lock is on.
+        // Re-authentication itself is triggered solely by AppLockOverlay's own onAppear
+        // (fired exactly once each time the overlay is inserted) — calling authenticate()
+        // here too would race a second LAContext prompt against that one.
+        .onChange(of: scenePhase) { _, newPhase in
+            isBackgroundMasked = (newPhase != .active)
+            if newPhase == .background {
+                appLock.lock()
             }
         }
     }

@@ -368,6 +368,13 @@ struct ExportView: View {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         try? data.write(to: url)
         let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        // Whatever destination is chosen (AirDrop, Files, Mail, etc.) has already
+        // received its own copy of the data by the time this fires, so removing our
+        // temp copy here — regardless of success/cancel — doesn't affect the share,
+        // it just stops the report from lingering unencrypted in tmp/ afterward.
+        vc.completionWithItemsHandler = { _, _, _, _ in
+            try? FileManager.default.removeItem(at: url)
+        }
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let root = scene.windows.first?.rootViewController {
             root.present(vc, animated: true)

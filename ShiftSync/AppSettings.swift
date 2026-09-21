@@ -99,6 +99,9 @@ class AppSettings: ObservableObject {
     // accessibility text size setting" rather than forcing a fixed size — Font.ss(_:)
     // in Theme.swift only overrides the live system setting when this is NOT that index.
     @Published var uiTextSizeIndex: Int = AppSettings.systemDefaultTextSizeIndex { didSet { persist() } }
+    // Off by default — opt-in Face ID/Touch ID/passcode gate on launch and on
+    // returning from the background, enabled in Profile > Security & Privacy.
+    @Published var appLockEnabled: Bool = false { didSet { persist() } }
 
     static let systemDefaultTextSizeIndex = 3
     static let uiTextSizeSteps: [DynamicTypeSize] = [.xSmall, .small, .medium, .large, .xLarge, .xxLarge, .xxxLarge]
@@ -154,6 +157,7 @@ class AppSettings: ObservableObject {
         var clockOutReminderHour: Int?
         var clockOutReminderMinute: Int?
         var uiTextSizeIndex: Int?
+        var appLockEnabled: Bool?
     }
 
     init() {
@@ -196,6 +200,7 @@ class AppSettings: ObservableObject {
         clockOutReminderHour    = s.clockOutReminderHour    ?? 17
         clockOutReminderMinute  = s.clockOutReminderMinute  ?? 0
         uiTextSizeIndex         = s.uiTextSizeIndex ?? 3
+        appLockEnabled          = s.appLockEnabled ?? false
     }
 
     private func persist() {
@@ -226,7 +231,8 @@ class AppSettings: ObservableObject {
             clockInReminderMinute: clockInReminderMinute,
             clockOutReminderHour: clockOutReminderHour,
             clockOutReminderMinute: clockOutReminderMinute,
-            uiTextSizeIndex: uiTextSizeIndex
+            uiTextSizeIndex: uiTextSizeIndex,
+            appLockEnabled: appLockEnabled
         )
         UserDefaults.standard.set(try? JSONEncoder().encode(s), forKey: key)
     }
