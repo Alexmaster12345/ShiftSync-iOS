@@ -24,11 +24,20 @@ A shift tracking app for iOS and Apple Watch built with SwiftUI.
 - **Clock In/Out Notifications** — Every clock in/out fires an instant local notification ("Clocked In ✓" / "Clocked Out ✓"). watchOS mirrors these to a paired Apple Watch automatically — no Watch app installation required
 - **Notifications** — Missed shift prompts (with quick day-type logging) and Work From Home clock in/out reminders, both with a configurable time and self-aware of days you've already worked so they don't fire needlessly
 - **Dark Mode & Time Format** — Full dark/light/system theme support, plus an independent 12-hour/24-hour toggle for how the app displays shift times
+- **In-App Text Size** — Resize ShiftSync's own text independent of the device's system-wide Dynamic Type setting (Profile → Appearance)
+- **App Lock** — Optional Face ID / Touch ID / device passcode gate on launch and on returning from the background (Profile → Security & Privacy), off by default
+- **App Switcher Privacy Masking** — Shift and earnings data is blurred the instant the app leaves the foreground, so it can't be captured in an app-switcher screenshot
 - **Backup & Restore** — Export all shift records to a JSON file and re-import them on another device (Profile → Security & Privacy)
 - **In-App Guide** — "How to Use ShiftSync" walkthrough in Profile → Help covering every feature
 
 ## Recent Improvements
 
+- **App Lock, app-switcher masking, and export cleanup** — Added an opt-in Face ID/Touch ID/passcode gate (`AppLockManager`), a blur mask that engages the instant the app isn't foreground/active, and cleanup of temp CSV/PDF/JSON export files once the share sheet finishes instead of leaving them in `tmp/`.
+- **Relicensed under GPL-3.0** — Replaced the MIT license with the GNU GPLv3.
+- **Appearance now requires an explicit Save** — Theme, Time Format, and Text Size are staged locally and only committed to settings when you tap Save Changes, instead of applying the instant you tap an option.
+- **In-app Text Size control** — A dedicated Bigger/Smaller control in Appearance, independent of the device's own accessibility text size, implemented via a `Font.ss()` helper that reads the chosen size directly instead of relying on SwiftUI's environment (which doesn't bridge to `UIFontMetrics`).
+- **App-wide Dynamic Type support** — Every text element now scales with the system (or in-app) text size setting via `UIFontMetrics`, including fixes for icon glyphs that shouldn't scale and small fixed-width badges that used to wrap mid-character at large accessibility sizes.
+- **Unit test suite** — Added a Swift Testing suite (`ShiftSyncTests`) covering pay calculation, overtime splitting, and settings' pure-function logic. In the process, found and fixed a serious bug where the test suite's cleanup calls were sharing (and wiping) the real app's `UserDefaults` on whatever simulator/device hosted the tests — `ShiftStore` now takes an injectable `UserDefaults`, and tests always point at an isolated suite.
 - **New brand icon** — Replaced the literal analog-clock app icon with the official brand mark (a blue 270° "sync arrow" ring + center clock hand on white), rendered at full 1024×1024 resolution from the brand identity spec, for both the iPhone and Watch app.
 - **Real bundle identifier** — Fixed a placeholder `com0.ShiftSync` bundle ID (and the Watch app's matching `WKCompanionAppBundleIdentifier`) left over from project creation, ahead of first App Store submission.
 - **Pay Rate redesigned as 3 columns** — Salary & Currency's Payment Type / Hourly Rate / Work Day Hours moved from 3 stacked rows to 3 side-by-side columns, with consistent font sizing across all three.
@@ -87,7 +96,8 @@ Optimized for all iPhone sizes:
 | Arrival & Departure Alerts | Toggle for geofence-based Office notifications |
 | Work From Home | Toggle + Clock In/Out reminder times for days without a workplace to geofence |
 | Work Schedule | Per-day Office / Home / Off assignment, driving which notification system fires on each weekday |
-| Appearance | Theme (Dark/Light/System) and 12-hour/24-hour time format |
+| Appearance | Theme (Dark/Light/System), 12-hour/24-hour time format, and in-app Text Size — all staged, applied via Save Changes |
+| App Lock | Optional Face ID / Touch ID / passcode gate on launch and foreground (Security & Privacy) |
 | Legal | Terms of Use and Privacy Policy, viewable in-app |
 | Data Backup | Export/Import shift records as JSON (Security & Privacy) |
 | How to Use | In-app feature walkthrough (Profile → Help) |
@@ -95,8 +105,10 @@ Optimized for all iPhone sizes:
 ## Built With
 
 - SwiftUI
+- Swift Testing (unit tests)
 - WatchConnectivity (iPhone ↔ Watch sync)
 - CoreLocation (geofencing)
+- LocalAuthentication (App Lock)
 - UserDefaults (persistence)
 
 ## Privacy
