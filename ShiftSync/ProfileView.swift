@@ -409,6 +409,13 @@ struct SecurityPrivacyView: View {
                         }
                         .padding(.horizontal, 16).padding(.vertical, 14)
                     }
+
+                    Text("Just exported? iOS can take a few seconds to make a new file tappable in Recents — if nothing happens when you select it, wait a moment and try again, or choose Browse > On My iPhone instead.")
+                        .font(.ss(10))
+                        .foregroundColor(.ssTextMuted)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16).padding(.bottom, 14)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .background(Color.darkCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
