@@ -111,4 +111,4 @@ ShiftSync collects no data and has no backend — everything is stored locally o
 
 ## License
 
-MIT
+GPL-3.0
