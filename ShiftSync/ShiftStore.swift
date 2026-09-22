@@ -219,16 +219,42 @@ class ShiftStore: ObservableObject {
         saveEntries()
     }
 
-    /// Re-derives the regular/overtime split for every existing plain "Regular" entry using
-    /// the *current* Overtime Rules settings, and clears any previous pay lock so all entries
-    /// resume live-computing pay from current settings. Called when the user picks "Apply to
-    /// All Shifts" in the Overtime Rules apply-change prompt. Mirrors the same split clockOut()
+    /// Re-derives the regular/overtime split for every existing shift using the *current*
+    /// Overtime Rules settings, and clears any previous pay lock so all entries resume
+    /// live-computing pay from current settings. Called when the user picks "Apply to All
+    /// Shifts" in the Overtime Rules apply-change prompt. Mirrors the same split clockOut()
     /// performs on a live shift, just applied retroactively to already-logged entries.
     func reapplyOvertimeRulesToExistingEntries() {
         let settings = AppSettings.shared
         let thresholdMins = Int(settings.dailyOvertimeHours * 60)
+
+        // A shift split under a *previous* threshold is stored as two independent entries
+        // (a Regular half + an adjacent Overtime half) with nothing linking them back to the
+        // original shift. Re-splitting only ever-unsplit Regular entries (as this used to do)
+        // left already-split shifts stuck with their old boundary forever, no matter how many
+        // times the threshold changed afterward — so first recombine any contiguous
+        // Regular→Overtime pair back into one shift, then re-split every shift from scratch
+        // against the new threshold below.
+        var merged: [ShiftEntry] = []
+        var i = 0
+        while i < entries.count {
+            let e = entries[i]
+            if e.shiftType == .regular, i + 1 < entries.count,
+               entries[i + 1].shiftType == .overtime,
+               abs(entries[i + 1].startedAt.timeIntervalSince(e.startedAt.addingTimeInterval(Double(e.durationMinutes) * 60))) < 1.0 {
+                var combined = e
+                combined.durationMinutes += entries[i + 1].durationMinutes
+                combined.unpaidBreakMinutes += entries[i + 1].unpaidBreakMinutes
+                merged.append(combined)
+                i += 2
+            } else {
+                merged.append(e)
+                i += 1
+            }
+        }
+
         var result: [ShiftEntry] = []
-        for entry in entries {
+        for entry in merged {
             var e = entry
             e.payOverride = nil
             guard settings.overtimeEnabled, e.shiftType == .regular, e.durationMinutes > thresholdMins else {
@@ -239,7 +265,7 @@ class ShiftStore: ObservableObject {
                                           durationMinutes: thresholdMins, unpaidBreakMinutes: 0)
             let otStart = e.startedAt.addingTimeInterval(Double(thresholdMins) * 60)
             let otEntry = ShiftEntry(shiftType: .overtime, startedAt: otStart,
-                                     durationMinutes: e.durationMinutes - thresholdMins, unpaidBreakMinutes: 0)
+                                     durationMinutes: e.durationMinutes - thresholdMins, unpaidBreakMinutes: e.unpaidBreakMinutes)
             result.append(regularEntry)
             result.append(otEntry)
         }

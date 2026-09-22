@@ -76,15 +76,23 @@ struct ShiftSyncTests {
         let originalRate = settings.hourlyRate
         let originalType = settings.paymentType
         let originalMultiplier = settings.overtimeMultiplier
+        let originalHours = settings.workDayHours
         defer {
             settings.hourlyRate = originalRate
             settings.paymentType = originalType
             settings.overtimeMultiplier = originalMultiplier
+            settings.workDayHours = originalHours
         }
 
         settings.paymentType = .hourly
         settings.hourlyRate = 20
         settings.overtimeMultiplier = 2.0 // deliberately matches holiday's 2x to prove it's not reading this
+        // Holiday is a day-type, so estimatedPay factors in workDayHours (via dailyRate) —
+        // pin it explicitly rather than assuming whatever the ambient value happens to be,
+        // since AppSettings persists to the real UserDefaults.standard (not an isolated test
+        // suite like ShiftStore), so this reflects whatever Work Day Hours is actually saved
+        // on whichever simulator/device hosts the test bundle.
+        settings.workDayHours = 8
 
         let entry = ShiftEntry(shiftType: .holiday, startedAt: Date(), durationMinutes: 480, unpaidBreakMinutes: 0)
         #expect(entry.estimatedPay == 320) // 8h * $20 * 2.0 (holiday's own fixed multiplier)
@@ -241,6 +249,35 @@ struct ShiftSyncTests {
         #expect(store.entries.count == 1)
         #expect(store.entries.first?.shiftType == .regular)
         #expect(store.entries.first?.durationMinutes == 360)
+    }
+
+    @Test func reapplyOvertimeRulesRedrawsSplitBoundaryOnAlreadySplitShift() {
+        let settings = AppSettings.shared
+        let originalEnabled = settings.overtimeEnabled
+        let originalThreshold = settings.dailyOvertimeHours
+        defer {
+            settings.overtimeEnabled = originalEnabled
+            settings.dailyOvertimeHours = originalThreshold
+        }
+
+        let store = ShiftStore(defaults: testDefaults)
+        store.clearAll()
+        defer { store.clearAll() }
+
+        // Simulate a 10h shift already split under an 8h threshold: Regular 8h + Overtime 2h,
+        // stored as two contiguous entries (exactly what clockOut()/a prior reapply produces).
+        let start = Date()
+        store.addEntry(ShiftEntry(shiftType: .regular, startedAt: start, durationMinutes: 480, unpaidBreakMinutes: 0))
+        store.addEntry(ShiftEntry(shiftType: .overtime, startedAt: start.addingTimeInterval(480 * 60), durationMinutes: 120, unpaidBreakMinutes: 0))
+
+        // Now the threshold changes to 6h — the split boundary must move, not stay stuck at 8h.
+        settings.overtimeEnabled = true
+        settings.dailyOvertimeHours = 6
+        store.reapplyOvertimeRulesToExistingEntries()
+
+        #expect(store.entries.count == 2)
+        #expect(store.entries.contains { $0.shiftType == .regular && $0.durationMinutes == 360 })
+        #expect(store.entries.contains { $0.shiftType == .overtime && $0.durationMinutes == 240 })
     }
 
     @Test func reapplyOvertimeRulesNeverSplitsDayTypeEntries() {
